@@ -10,6 +10,7 @@ Options:
   --prompt "text"             Required. Image prompt.
   --negative-prompt "text"    Optional. Negative prompt.
   --model "Z-Image-Turbo"     Optional. Model: Z-Image-Turbo, Qwen-Image, Qwen-Image-Plus. Default: Z-Image-Turbo
+  --size "1024*1024"          Optional. Default: 1024*1024
   --n 1                       Optional. Default: 1
   --watermark true|false      Optional. Default: false
   --prompt-extend true|false  Optional. Default: true
@@ -37,6 +38,33 @@ to_bool() {
       return 1
       ;;
   esac
+}
+
+validate_model() {
+  case "$1" in
+    Z-Image-Turbo|Qwen-Image|Qwen-Image-Plus)
+      return 0
+      ;;
+    *)
+      echo "Error: invalid --model '$1'. Must be one of: Z-Image-Turbo, Qwen-Image, Qwen-Image-Plus." >&2
+      return 1
+      ;;
+  esac
+}
+
+require_positive_integer() {
+  local val="$1"
+  local flag="$2"
+  case "$val" in
+    ''|*[!0-9]*)
+      echo "Error: invalid ${flag} (must be a positive integer)." >&2
+      return 1
+      ;;
+  esac
+  if (( val <= 0 )); then
+    echo "Error: invalid ${flag} (must be > 0)." >&2
+    return 1
+  fi
 }
 
 extract_first_by_keys() {
@@ -130,6 +158,11 @@ if [[ -z "$PROMPT" ]]; then
   exit 1
 fi
 
+validate_model "$MODEL"
+require_positive_integer "$N" "--n"
+require_positive_integer "$POLL_INTERVAL" "--poll-interval"
+require_positive_integer "$MAX_WAIT" "--max-wait"
+
 # Check and load SOPH_API_KEY
 
 if [[ -z "${API_KEY:-}" ]]; then
@@ -163,12 +196,6 @@ if [[ -n "$SIZE" ]]; then
 fi
 
 if [[ -n "$N" ]]; then
-  case "$N" in
-    ''|*[!0-9]*)
-      echo "Error: invalid --n (must be integer)." >&2
-      exit 1
-      ;;
-  esac
   if [[ -n "$params" ]]; then params="${params},"; fi
   params="${params}\"n\":${N}"
 fi

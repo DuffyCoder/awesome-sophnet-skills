@@ -8,6 +8,10 @@ description: Use when a user requests Sophnet text-to-image generation, needs mo
 ## Overview
 Generate Sophnet images with shell scripts that handle task polling and structured output.
 
+Script responsibilities:
+- `generate_image.sh`: core API caller and polling loop, outputs machine-friendly `TASK_ID`, `STATUS`, and `IMAGE_URL`.
+- `generate_and_preview.sh`: wrapper for local use, calls `generate_image.sh`, downloads first image, adds `PREVIEW_PATH`.
+
 ## When to Use
 - User asks to generate an image with Sophnet models.
 - Caller needs stable outputs like `TASK_ID`, `STATUS`, `IMAGE_URL`, `PREVIEW_PATH`.
@@ -20,6 +24,10 @@ Generate Sophnet images with shell scripts that handle task polling and structur
 | Generate + local preview path | `bash {baseDir}/scripts/generate_and_preview.sh --prompt "..."` |
 | Generate URLs only | `bash {baseDir}/scripts/generate_image.sh --prompt "..."` |
 | Show script options | `bash {baseDir}/scripts/generate_image.sh --help` |
+
+Recommended defaults:
+- Use `generate_and_preview.sh` for interactive local image preview.
+- Use `generate_image.sh` for automation/CI or when download is not needed.
 
 ## Implementation
 1. Ensure `SOPH_API_KEY` is available. If missing, use `sophnet-sophon-key`.
