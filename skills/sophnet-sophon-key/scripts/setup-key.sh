@@ -6,7 +6,15 @@
 
 set -e
 
-MOLTBOT_CONFIG="${MOLTBOT_CONFIG:-$HOME/.clawdbot/moltbot.json}"
+# 支持多个配置文件路径
+MOLTBOT_CONFIG=""
+if [[ -f "$HOME/.clawdbot/moltbot.json" ]]; then
+    MOLTBOT_CONFIG="$HOME/.clawdbot/moltbot.json"
+elif [[ -f "$HOME/.moltbot/moltbot.json" ]]; then
+    MOLTBOT_CONFIG="$HOME/.moltbot/moltbot.json"
+else
+    MOLTBOT_CONFIG="$HOME/.clawdbot/moltbot.json"
+fi
 
 # Colored output
 green='\033[0;32m'

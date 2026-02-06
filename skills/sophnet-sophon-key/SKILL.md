@@ -1,8 +1,7 @@
 ---
-name: sophnet-sophon-key
-description: Use when SOPH_API_KEY is missing, invalid, or not persisted across sessions, and the caller needs credential resolution from environment variables or Moltbot config.
-metadata:
-  short-description: Resolve and persist SOPH_API_KEY for Sophnet scripts
+name: sophon-key
+description: Configure and manage Sophon API Key. Automatically reads from Moltbot config or guides users through setup. Use when SOPH_API_KEY environment variable is missing or when helping users configure their Sophon API credentials.
+metadata: {"moltbot":{"emoji":"🔑","requires":{"env":["SOPH_API_KEY"],"bins":["bash"]},"primaryEnv":"SOPH_API_KEY"}}
 ---
 
 # Sophnet Sophon Key
