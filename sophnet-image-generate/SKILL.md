@@ -1,6 +1,8 @@
 ---
 name: sophnet-image-generate
 description: Use when a user requests Sophnet text-to-image generation, needs model selection across Z-Image-Turbo/Qwen-Image/Qwen-Image-Plus, or reports polling/output issues such as missing IMAGE_URL or PREVIEW_PATH.
+metadata:
+  short-description: Generate Sophnet images with stable polling outputs
 ---
 
 # Sophnet Image Generate

@@ -1,6 +1,8 @@
 ---
 name: sophnet-sophon-key
 description: Use when SOPH_API_KEY is missing, invalid, or not persisted across sessions, and the caller needs credential resolution from environment variables or Moltbot config.
+metadata:
+  short-description: Resolve and persist SOPH_API_KEY for Sophnet scripts
 ---
 
 # Sophnet Sophon Key
