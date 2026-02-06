@@ -1,0 +1,11 @@
+[project]
+name = "image-ocr"
+version = "1.0.0"
+description = "OCR text and table extraction using Sophnet PaddleOCR API"
+requires-python = ">=3.8"
+dependencies = [
+    "requests>=2.28.0",
+]
+
+[project.scripts]
+ocr = "ocr:main"
