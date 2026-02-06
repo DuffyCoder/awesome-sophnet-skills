@@ -1,6 +1,8 @@
 ---
 name: sophnet-smart-image-loader
 description: Use when an image must be displayed from URL or local path and the caller needs one path-resolution workflow with explicit success/failure output and cleanup handling.
+metadata:
+  short-description: Resolve image URL or path for local preview
 ---
 
 # Smart Image Loader
