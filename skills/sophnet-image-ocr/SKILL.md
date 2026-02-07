@@ -1,7 +1,6 @@
 ---
-name: sophon-image-ocr
+name: sophnet-image-ocr
 description: OCR text and table extraction from images using Sophnet API. Automatically handles local files and URLs. Integrates with sophnet-sophon-key skill for API key management.
-homepage: https://www.sophnet.com
 ---
 
 # Image OCR (Sophnet API)

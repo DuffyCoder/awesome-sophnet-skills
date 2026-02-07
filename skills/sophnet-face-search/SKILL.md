@@ -1,5 +1,5 @@
 ---
-name: sophon-face-search
+name: sophnet-face-search
 description: Face detection and similarity search using Sophnet API. Use when the user needs to find similar faces across multiple images, detect faces in photos, or compare face embeddings. Supports two-step workflow - extract query face embedding, then search for similar faces in a collection of images.
 ---
 # Sophon Face Search
