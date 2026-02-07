@@ -1,0 +1,10 @@
+[project]
+name = "sophnet-docx"
+version = "0.1.0"
+description = "Skill-local runtime dependencies for sophnet-docx"
+requires-python = ">=3.10"
+dependencies = [
+  "defusedxml>=0.7.1",
+  "lxml>=5.2.0",
+  "python-docx>=1.1.0",
+]
