@@ -1,0 +1,9 @@
+[project]
+name = "sophnet-document-creator"
+version = "0.1.0"
+description = "Skill-local runtime dependencies for sophnet-document-creator"
+requires-python = ">=3.10"
+dependencies = [
+  "python-docx>=1.1.0",
+  "python-pptx>=1.0.0",
+]
