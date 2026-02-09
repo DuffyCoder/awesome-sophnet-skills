@@ -1,0 +1,230 @@
+{
+  "version": "2.2",
+  "last_updated": "2026-02-09",
+
+  "sources": {
+    "tier1": {
+      "description": "中国大陆可直连的高信号 RSS 源",
+      "batch_a": [
+        {
+          "id": "ithome",
+          "name": "IT之家",
+          "url": "https://www.ithome.com/rss/",
+          "fetch_method": "webfetch",
+          "extract": "top_10_rss",
+          "enabled": true,
+          "avg_quality": 4.2,
+          "success_rate": 0.95
+        },
+        {
+          "id": "kr36",
+          "name": "36氪",
+          "url": "https://36kr.com/feed",
+          "fetch_method": "webfetch",
+          "extract": "top_10_rss",
+          "enabled": true,
+          "avg_quality": 4.3,
+          "success_rate": 0.94
+        }
+      ],
+      "batch_b": [
+        {
+          "id": "jiqizhixin",
+          "name": "机器之心",
+          "url": "https://www.jiqizhixin.com/rss",
+          "fetch_method": "webfetch",
+          "extract": "top_10_rss",
+          "enabled": true,
+          "avg_quality": 4.4,
+          "success_rate": 0.92
+        },
+        {
+          "id": "leiphone",
+          "name": "雷峰网",
+          "url": "https://www.leiphone.com/feed",
+          "fetch_method": "webfetch",
+          "extract": "top_10_rss",
+          "enabled": true,
+          "avg_quality": 4.1,
+          "success_rate": 0.90
+        }
+      ]
+    },
+
+    "tier2": {
+      "description": "补充覆盖面（资讯/国际/生活方式）",
+      "batch_a": [
+        {
+          "id": "sspai",
+          "name": "少数派",
+          "url": "https://sspai.com/feed",
+          "fetch_method": "webfetch",
+          "extract": "top_10_rss",
+          "enabled": true,
+          "avg_quality": 4.0,
+          "success_rate": 0.90
+        },
+        {
+          "id": "chinadaily_china",
+          "name": "China Daily - China",
+          "url": "https://www.chinadaily.com.cn/rss/china_rss.xml",
+          "fetch_method": "webfetch",
+          "extract": "top_10_rss",
+          "enabled": true,
+          "avg_quality": 3.8,
+          "success_rate": 0.88
+        }
+      ],
+      "batch_b": [
+        {
+          "id": "chinadaily_world",
+          "name": "China Daily - World",
+          "url": "https://www.chinadaily.com.cn/rss/world_rss.xml",
+          "fetch_method": "webfetch",
+          "extract": "top_10_rss",
+          "enabled": true,
+          "avg_quality": 3.8,
+          "success_rate": 0.88
+        },
+        {
+          "id": "chinadaily_sports",
+          "name": "China Daily - Sports",
+          "url": "https://www.chinadaily.com.cn/rss/sports_rss.xml",
+          "fetch_method": "webfetch",
+          "extract": "top_10_rss",
+          "enabled": true,
+          "avg_quality": 3.6,
+          "success_rate": 0.88
+        }
+      ]
+    },
+
+    "tier3_browser": {
+      "description": "JS 渲染源（当前禁用，避免浏览器依赖）",
+      "sources": []
+    },
+
+    "disabled": {
+      "description": "已禁用的源（海外/反爬/提取不稳定）",
+      "sources": [
+        {
+          "id": "hn",
+          "name": "Hacker News",
+          "url": "https://news.ycombinator.com/rss",
+          "reason": "海外源在中国大陆不稳定/被阻断",
+          "disabled_date": "2026-02-09"
+        },
+        {
+          "id": "hf_papers",
+          "name": "HuggingFace Papers",
+          "url": "https://huggingface.co/papers/date/{{date}}",
+          "reason": "海外源 + 页面提取不稳定",
+          "disabled_date": "2026-02-09"
+        },
+        {
+          "id": "one_useful_thing",
+          "name": "One Useful Thing",
+          "url": "https://www.oneusefulthing.org",
+          "reason": "海外源 + Substack 结构影响提取",
+          "disabled_date": "2026-02-09"
+        },
+        {
+          "id": "paul_graham",
+          "name": "Paul Graham Essays",
+          "url": "https://paulgraham.com/articles.html",
+          "reason": "海外源 + 提取不稳定",
+          "disabled_date": "2026-02-09"
+        },
+        {
+          "id": "james_clear",
+          "name": "James Clear 3-2-1",
+          "url": "https://jamesclear.com/3-2-1",
+          "reason": "海外源 + newsletter 需要订阅",
+          "disabled_date": "2026-02-09"
+        },
+        {
+          "id": "fs_blog",
+          "name": "Farnam Street Brain Food",
+          "url": "https://fs.blog/brain-food",
+          "reason": "海外源 + 提取不稳定",
+          "disabled_date": "2026-02-09"
+        },
+        {
+          "id": "hackernoon_pm",
+          "name": "HackerNoon PM",
+          "url": "https://hackernoon.com/c/product-management",
+          "reason": "海外源 + 提取不稳定",
+          "disabled_date": "2026-02-09"
+        },
+        {
+          "id": "scotthyoung",
+          "name": "Scott Young Blog",
+          "url": "https://scotthyoung.com/blog/articles",
+          "reason": "海外源 + 提取不稳定",
+          "disabled_date": "2026-02-09"
+        },
+        {
+          "id": "producthunt",
+          "name": "Product Hunt",
+          "url": "https://www.producthunt.com",
+          "reason": "需要浏览器渲染",
+          "disabled_date": "2026-02-09"
+        },
+        {
+          "id": "latent_space",
+          "name": "Latent Space",
+          "url": "https://www.latent.space",
+          "reason": "Substack 需要 JS 渲染",
+          "disabled_date": "2026-02-09"
+        },
+        {
+          "id": "tldr_ai",
+          "name": "TLDR AI",
+          "url": "https://tldr.tech/ai",
+          "reason": "订阅页面，无文章列表",
+          "disabled_date": "2026-01-21"
+        },
+        {
+          "id": "bensbites",
+          "name": "Ben's Bites",
+          "url": "https://bensbites.com/archive",
+          "reason": "需要登录/付费墙",
+          "disabled_date": "2026-01-21"
+        },
+        {
+          "id": "interconnects",
+          "name": "Interconnects AI",
+          "url": "https://interconnects.ai",
+          "reason": "内容提取失败，Substack 结构问题",
+          "disabled_date": "2026-01-21"
+        },
+        {
+          "id": "beehiiv_rss",
+          "name": "Beehiiv RSS feeds",
+          "url": "https://rss.beehiiv.com",
+          "reason": "RSS 抓取困难",
+          "disabled_date": "2026-01-21"
+        }
+      ]
+    }
+  },
+
+  "fetch_config": {
+    "webfetch": {
+      "timeout_ms": 30000,
+      "retry_count": 1,
+      "cache_ttl_minutes": 60
+    },
+    "browser": {
+      "timeout_ms": 45000,
+      "wait_for_selector": "article, .post, .item",
+      "screenshot_on_error": true
+    }
+  },
+
+  "quality_thresholds": {
+    "min_score_to_include": 3,
+    "target_items": 20,
+    "early_stop_threshold": 25
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "schema_version": "1.0",
+  "description": "Daily News Report 缓存文件，用于避免重复抓取和跟踪历史表现",
+
+  "last_run": {
+    "date": "2026-02-09",
+    "duration_seconds": 30,
+    "items_collected": 3,
+    "items_published": 3,
+    "sources_used": ["fs_blog", "hackernoon_pm"]
+  },
+
+  "source_stats": {
+    "_comment": "记录每个源的历史表现，用于动态调整优先级",
+    "hn": {
+      "total_fetches": 2,
+      "success_count": 0,
+      "avg_items_per_fetch": 0,
+      "avg_quality_score": 0,
+      "last_fetch": "2026-02-09T04:44:19Z",
+      "last_success": null,
+      "last_error": "fetch failed"
+    },
+    "hf_papers": {
+      "total_fetches": 2,
+      "success_count": 1,
+      "avg_items_per_fetch": 0,
+      "avg_quality_score": 0,
+      "last_fetch": "2026-02-09T04:44:19Z",
+      "last_success": "2026-02-09T04:44:19Z",
+      "last_error": null,
+      "note": "No new papers for 2026-02-09 date page"
+    },
+    "one_useful_thing": {
+      "total_fetches": 2,
+      "success_count": 1,
+      "avg_items_per_fetch": 0,
+      "avg_quality_score": 0,
+      "last_fetch": "2026-02-09T04:44:24Z",
+      "last_success": "2026-02-09T04:44:24Z",
+      "last_error": null,
+      "note": "Landing page only, newsletter content not accessible"
+    },
+    "paul_graham": {
+      "total_fetches": 2,
+      "success_count": 1,
+      "avg_items_per_fetch": 0,
+      "avg_quality_score": 0,
+      "last_fetch": "2026-02-09T04:44:26Z",
+      "last_success": "2026-02-09T04:44:26Z",
+      "last_error": null,
+      "note": "Minimal content returned from articles page"
+    },
+    "james_clear": {
+      "total_fetches": 2,
+      "success_count": 1,
+      "avg_items_per_fetch": 0,
+      "avg_quality_score": 0,
+      "last_fetch": "2026-02-09T04:44:32Z",
+      "last_success": "2026-02-09T04:44:32Z",
+      "last_error": null,
+      "note": "Main site only, newsletter requires email signup"
+    },
+    "fs_blog": {
+      "total_fetches": 3,
+      "success_count": 3,
+      "avg_items_per_fetch": 1.0,
+      "avg_quality_score": 5.0,
+      "last_fetch": "2026-02-09T04:44:38Z",
+      "last_success": "2026-02-09T04:44:38Z",
+      "last_error": null
+    },
+    "hackernoon_pm": {
+      "total_fetches": 3,
+      "success_count": 3,
+      "avg_items_per_fetch": 1.0,
+      "avg_quality_score": 4.0,
+      "last_fetch": "2026-02-09T04:44:43Z",
+      "last_success": "2026-02-09T04:44:43Z",
+      "last_error": null,
+      "note": "Category page fetched, extracted 2 high-quality articles"
+    },
+    "scotthyoung": {
+      "total_fetches": 2,
+      "success_count": 1,
+      "avg_items_per_fetch": 0,
+      "avg_quality_score": 0,
+      "last_fetch": "2026-02-09T04:44:48Z",
+      "last_success": "2026-02-09T04:44:48Z",
+      "last_error": null,
+      "note": "Articles page only, book and course promo without article links"
+    }
+  },
+
+  "url_cache": {
+    "_comment": "已处理的 URL 缓存，避免重复收录",
+    "_ttl_hours": 168,
+    "entries": {
+      "https://fs.blog/brain-food/january-25-2026/": {
+        "timestamp": "2026-02-09T04:44:38Z",
+        "title": "The Spectrum of Independence"
+      },
+      "https://hackernoon.com/10-proven-ways-to-reduce-misalignment-between-stakeholders-in-product-teams": {
+        "timestamp": "2026-02-09T04:44:43Z",
+        "title": "10 Proven Ways to Reduce Misalignment Between Stakeholders in Product Teams"
+      },
+      "https://hackernoon.com/why-good-products-feel-broken": {
+        "timestamp": "2026-02-09T04:44:43Z",
+        "title": "Why Good Products Feel Broken"
+      }
+    }
+  },
+
+  "content_hashes": {
+    "_comment": "内容指纹，用于去重",
+    "_ttl_hours": 168,
+    "entries": {}
+  },
+
+  "article_history": {
+    "_comment": "已收录文章的简要记录",
+    "2026-02-07": [
+      {
+        "title": "The Spectrum of Independence",
+        "url": "https://fs.blog/brain-food/january-25-2026/",
+        "source_id": "fs_blog",
+        "score": 5
+      }
+    ],
+    "2026-02-09": [
+      {
+        "title": "The Spectrum of Independence",
+        "url": "https://fs.blog/brain-food/january-25-2026/",
+        "source_id": "fs_blog",
+        "score": 5
+      },
+      {
+        "title": "10 Proven Ways to Reduce Misalignment Between Stakeholders in Product Teams",
+        "url": "https://hackernoon.com/10-proven-ways-to-reduce-misalignment-between-stakeholders-in-product-teams",
+        "source_id": "hackernoon_pm",
+        "score": 4
+      },
+      {
+        "title": "Why Good Products Feel Broken",
+        "url": "https://hackernoon.com/why-good-products-feel-broken",
+        "source_id": "hackernoon_pm",
+        "score": 4
+      }
+    ]
+  }
+}

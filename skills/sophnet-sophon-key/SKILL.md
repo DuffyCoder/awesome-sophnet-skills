@@ -1,7 +1,7 @@
 ---
 name: sophnet-sophon-key
 description: Configure and manage Sophon API Key. Automatically reads from Moltbot config or guides users through setup. Use when SOPH_API_KEY environment variable is missing or when helping users configure their Sophon API credentials.
-metadata: {"moltbot":{"emoji":"🔑","requires":{"env":["SOPH_API_KEY"],"bins":["bash"]},"primaryEnv":"SOPH_API_KEY"}}
+metadata: {"openclaw":{"emoji":"🔑","requires":{"env":["SOPH_API_KEY"],"bins":["bash"]},"primaryEnv":"SOPH_API_KEY"}}
 ---
 
 # Sophnet Sophon Key
