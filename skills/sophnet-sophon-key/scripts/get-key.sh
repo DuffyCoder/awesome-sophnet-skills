@@ -6,14 +6,17 @@
 
 set -e
 
-# 支持多个配置文件路径
+# 支持多个配置文件路径（按优先级查找）
 MOLTBOT_CONFIG=""
-if [[ -f "$HOME/.clawdbot/moltbot.json" ]]; then
-    MOLTBOT_CONFIG="$HOME/.clawdbot/moltbot.json"
-elif [[ -f "$HOME/.moltbot/moltbot.json" ]]; then
-    MOLTBOT_CONFIG="$HOME/.moltbot/moltbot.json"
-else
-    MOLTBOT_CONFIG="$HOME/.clawdbot/moltbot.json"
+for _cfg in "$HOME/.openclaw/openclaw.json" "$HOME/.clawdbot/moltbot.json" "$HOME/.moltbot/moltbot.json"; do
+    if [[ -f "$_cfg" ]]; then
+        MOLTBOT_CONFIG="$_cfg"
+        break
+    fi
+done
+# 默认回退路径
+if [[ -z "$MOLTBOT_CONFIG" ]]; then
+    MOLTBOT_CONFIG="$HOME/.openclaw/openclaw.json"
 fi
 SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 

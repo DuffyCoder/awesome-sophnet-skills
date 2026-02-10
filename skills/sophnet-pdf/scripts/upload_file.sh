@@ -38,9 +38,15 @@ while [[ $# -gt 0 ]]; do
       exit 0
       ;;
     *)
-      echo "Unknown argument: $1" >&2
-      usage
-      exit 1
+      # Handle unquoted file paths split by shell (e.g. spaces in Chinese filenames)
+      if [[ -n "$FILE_PATH" && "$1" != -* ]]; then
+        FILE_PATH="$FILE_PATH $1"
+      else
+        echo "Unknown argument: $1" >&2
+        usage
+        exit 1
+      fi
+      shift
       ;;
   esac
 done
@@ -72,6 +78,18 @@ fi
 
 if [[ -z "$API_KEY" ]]; then
   API_KEY="${SOPH_API_KEY:-}"
+fi
+
+# Fallback: delegate to sophon-key skill's get-key.sh
+if [[ -z "$API_KEY" ]]; then
+  SKILLS_DIR="$(cd "$SKILL_DIR/.." && pwd)"
+  GET_KEY_SCRIPT=""
+  for _candidate in "$SKILLS_DIR/sophon-key/scripts/get-key.sh" "$SKILLS_DIR/sophnet-sophon-key/scripts/get-key.sh"; do
+    if [[ -f "$_candidate" ]]; then GET_KEY_SCRIPT="$_candidate"; break; fi
+  done
+  if [[ -n "$GET_KEY_SCRIPT" ]]; then
+    API_KEY="$(bash "$GET_KEY_SCRIPT" --output-quiet 2>/dev/null || true)"
+  fi
 fi
 
 if [[ -z "$API_KEY" ]]; then

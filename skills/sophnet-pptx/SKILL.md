@@ -5,29 +5,65 @@ description: "Use this skill any time a .pptx file is involved in any way — as
 
 # PPTX Skill
 
+## MANDATORY: Working Directory
+
+**EVERY command in this skill MUST be executed from THIS skill's directory.** Before running ANY command — Python, Node.js, or bash script — you MUST `cd` into this skill's directory first. Determine the absolute path of this `SKILL.md` file and use its parent directory.
+
+```bash
+# FIRST COMMAND of every task — determine and cd into the skill directory
+SKILL_DIR="<absolute-path-to-this-skills-sophnet-pptx-directory>"
+cd "$SKILL_DIR"
+```
+
+**NEVER run commands from the repository root or any other directory.** If you do, `node` won't find `.js` files, `uv run` won't find `pyproject.toml`, and `python` won't have access to required packages.
+
 ## Quick Reference
 
 | Task | Guide |
 |------|-------|
-| Prepare Python environment | `bash scripts/ensure_uv_env.sh` |
-| Read/analyze content | `uv run --project . python -m markitdown presentation.pptx` |
+| Prepare Python environment | `cd $SKILL_DIR && bash scripts/ensure_uv_env.sh` |
+| Read/analyze content | `cd $SKILL_DIR && uv run --project . python -m markitdown presentation.pptx` |
 | Edit or create from template | Read [editing.md](editing.md) |
 | Create from scratch | Read [pptxgenjs.md](pptxgenjs.md) |
-| Optional upload for URL | `bash scripts/upload_file.sh --file /abs/path/output.pptx` |
+| Optional upload for URL | `cd $SKILL_DIR && bash scripts/upload_file.sh --file /abs/path/output.pptx` |
 
 ## Python Runtime (uv)
 
-Use a skill-local `uv` environment for all Python commands in this skill.
+**CRITICAL: All Python execution in this skill MUST use `uv run --project .` from the skill directory. NEVER use bare `python3`, `python`, or `pip install` directly — the required packages (python-pptx, markitdown, lxml, etc.) are ONLY available inside the uv virtual environment defined by this skill's `pyproject.toml`. Direct `python3` will fail with ModuleNotFoundError.**
+
+First, ensure the environment is set up (run once per session):
 
 ```bash
+cd "$SKILL_DIR"
 bash scripts/ensure_uv_env.sh
 ```
 
-Then run Python scripts with:
+Then ALL Python commands must use this prefix:
 
 ```bash
-uv run --project . python <script-or-module>
+cd "$SKILL_DIR" && uv run --project . python <script-or-module>
 ```
+
+This applies to both the provided scripts AND any inline Python code you write. For inline code, use:
+
+```bash
+cd "$SKILL_DIR" && uv run --project . python -c "from pptx import Presentation; ..."
+```
+
+## Node.js Runtime (pptxgenjs)
+
+**CRITICAL: All Node.js execution for creating presentations from scratch MUST run from this skill directory.** The `pptxgenjs`, `react-icons`, `sharp` etc. packages are installed in this skill's local `node_modules/`. Running `node` from any other directory will fail with `Cannot find module`.
+
+```bash
+# CORRECT — always cd first, then run node
+cd "$SKILL_DIR" && node create_presentation.js
+
+# WRONG — running from repo root or other directory
+node create_presentation.js              # ✗ Cannot find module
+node /some/other/path/create_ppt.js      # ✗ Cannot find module 'pptxgenjs'
+```
+
+When writing a `.js` file to create slides, save it inside `$SKILL_DIR` (e.g. `$SKILL_DIR/create_presentation.js`), then execute from `$SKILL_DIR`.
 
 ## Delivery
 
@@ -79,9 +115,39 @@ uv run --project . python scripts/office/unpack.py presentation.pptx unpacked/
 
 ## Creating from Scratch
 
-**Read [pptxgenjs.md](pptxgenjs.md) for full details.**
+Use when no template or reference presentation is available. **You MUST follow the steps below in order. Do NOT freestyle — read the reference first, write the script, then run it from `$SKILL_DIR`.**
 
-Use when no template or reference presentation is available.
+### Step-by-step workflow
+
+1. **Read the API reference FIRST** — open and read [pptxgenjs.md](pptxgenjs.md) in full before writing any code. It contains correct syntax, required enums, and a Common Pitfalls section that prevents crashes.
+
+2. **Write a `.js` file inside `$SKILL_DIR`** — save your script as e.g. `$SKILL_DIR/create_presentation.js`. Key rules from the reference:
+   - Shape enum: `pres.shapes.RECTANGLE`, NOT string `'rect'` or `'RECTANGLE'`
+   - Color: `"FF0000"` (6-char hex, no `#` prefix)
+   - Background: `slide.background = { color: "HEXVAL" }` (use `color` key, not `path`)
+   - Save with: `pres.writeFile({ fileName: "/tmp/output.pptx" })`
+
+3. **Run from `$SKILL_DIR`** — the local `node_modules/` with pptxgenjs is here:
+   ```bash
+   cd "$SKILL_DIR" && node create_presentation.js
+   ```
+
+4. **Verify** — check the output file exists, then use markitdown for content QA:
+   ```bash
+   cd "$SKILL_DIR" && uv run --project . python -m markitdown /tmp/output.pptx
+   ```
+
+5. **Upload (if URL requested)**:
+   ```bash
+   cd "$SKILL_DIR" && bash scripts/upload_file.sh --file /tmp/output.pptx
+   ```
+
+### What NOT to do
+
+- Do NOT write or run `.js` files from the repository root — `require('pptxgenjs')` will fail
+- Do NOT guess the pptxgenjs API — always refer to [pptxgenjs.md](pptxgenjs.md)
+- Do NOT use string shape names like `'rect'` — use `pres.shapes.RECTANGLE`
+- Do NOT skip reading [pptxgenjs.md](pptxgenjs.md) before coding
 
 ---
 
@@ -241,22 +307,22 @@ Report ALL issues found, including minor ones.
 
 ---
 
-## Converting to Images
+## Converting to Images (optional — requires LibreOffice)
 
-Convert presentations to individual slide images for visual inspection:
+**Prerequisites:** LibreOffice (`soffice`) and Poppler (`pdftoppm`) must be installed. If `soffice` is not available, **skip Visual QA entirely** — do NOT attempt to install it or call `soffice.py`. Content QA with markitdown is sufficient.
 
+Check first:
 ```bash
-uv run --project . python scripts/office/soffice.py --headless --convert-to pdf output.pptx
+which soffice && echo "available" || echo "NOT available — skip Visual QA"
+```
+
+If available, convert to images:
+```bash
+cd "$SKILL_DIR" && uv run --project . python scripts/office/soffice.py --headless --convert-to pdf output.pptx
 pdftoppm -jpeg -r 150 output.pdf slide
 ```
 
 This creates `slide-01.jpg`, `slide-02.jpg`, etc.
-
-To re-render specific slides after fixes:
-
-```bash
-pdftoppm -jpeg -r 150 -f N -l N output.pdf slide-fixed
-```
 
 ---
 
@@ -265,6 +331,6 @@ pdftoppm -jpeg -r 150 -f N -l N output.pdf slide-fixed
 - `uv` - Python environment and dependency manager for this skill (`bash scripts/ensure_uv_env.sh`)
 - `uv run --project . python -m markitdown` - text extraction
 - `uv run --project . python scripts/thumbnail.py` - thumbnail grids
-- `npm install -g pptxgenjs` - creating from scratch
-- LibreOffice (`soffice`) - PDF conversion (auto-configured for sandboxed environments via `scripts/office/soffice.py`)
-- Poppler (`pdftoppm`) - PDF to images
+- `pptxgenjs` - creating from scratch (installed locally in skill `node_modules/`; if missing run `cd <skill-dir> && npm install pptxgenjs react react-dom react-icons sharp`)
+- LibreOffice (`soffice`) - PDF conversion (**optional**; skip Visual QA if not installed)
+- Poppler (`pdftoppm`) - PDF to images (**optional**; used with LibreOffice)

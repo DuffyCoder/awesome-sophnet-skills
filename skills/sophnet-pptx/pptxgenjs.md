@@ -235,7 +235,7 @@ slide.addImage({
 
 ### Icon Libraries
 
-Install: `npm install -g react-icons react react-dom sharp`
+Install (run from skill directory): `npm install react-icons react react-dom sharp`
 
 Popular icon sets in react-icons:
 - `react-icons/fa` - Font Awesome
@@ -398,7 +398,15 @@ titleSlide.addText("My Title", { placeholder: "title" });
    slide.addShape(pres.shapes.RECTANGLE, { shadow: makeShadow(), ... });
    ```
 
-8. **Don't use `ROUNDED_RECTANGLE` with accent borders** - rectangular overlay bars won't cover rounded corners. Use `RECTANGLE` instead.
+8. **NEVER pass shape names as strings** - `addShape` requires the enum from `pres.shapes`, not a string.
+
+   ```javascript
+   slide.addShape('rect', { ... });              // ❌ WRONG — throws "Missing/Invalid shape parameter"
+   slide.addShape('RECTANGLE', { ... });          // ❌ WRONG — still a string
+   slide.addShape(pres.shapes.RECTANGLE, { ... }); // ✅ CORRECT — use the enum
+   ```
+
+9. **Don't use `ROUNDED_RECTANGLE` with accent borders** - rectangular overlay bars won't cover rounded corners. Use `RECTANGLE` instead.
    ```javascript
    // ❌ WRONG: Accent bar doesn't cover rounded corners
    slide.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 1, y: 1, w: 3, h: 1.5, fill: { color: "FFFFFF" } });

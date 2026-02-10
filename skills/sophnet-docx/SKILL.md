@@ -1,9 +1,20 @@
 ---
 name: sophnet-docx
-description: "Use this skill whenever the user wants to create, read, edit, or manipulate Word documents (.docx files). Triggers include: any mention of \"Word doc\", \"word document\", \".docx\", or requests to produce professional documents with formatting like tables of contents, headings, page numbers, or letterheads. Also use when extracting or reorganizing content from .docx files, inserting or replacing images in documents, performing find-and-replace in Word files, working with tracked changes or comments, or converting content into a polished Word document. If the user asks for a \"report\", \"memo\", \"letter\", \"template\", or similar deliverable as a Word or .docx file, use this skill. Do NOT use for PDFs, spreadsheets, Google Docs, or general coding tasks unrelated to document generation."
+description: 'Use this skill whenever the user wants to create, read, edit, or manipulate Word documents (.docx files). Triggers include: any mention of "Word doc", "word document", ".docx", or requests to produce professional documents with formatting like tables of contents, headings, page numbers, or letterheads. Also use when extracting or reorganizing content from .docx files, inserting or replacing images in documents, performing find-and-replace in Word files, working with tracked changes or comments, or converting content into a polished Word document. If the user asks for a "report", "memo", "letter", "template", or similar deliverable as a Word or .docx file, use this skill. Do NOT use for PDFs, spreadsheets, Google Docs, or general coding tasks unrelated to document generation.'
 ---
 
 # DOCX creation, editing, and analysis
+
+## MANDATORY: Working Directory
+
+**EVERY command in this skill MUST be executed from THIS skill's directory.** Before running ANY command — Python, Node.js, or bash script — you MUST `cd` into this skill's directory first. Determine the absolute path of this `SKILL.md` file and use its parent directory.
+
+```bash
+SKILL_DIR="<absolute-path-to-this-skills-sophnet-docx-directory>"
+cd "$SKILL_DIR"
+```
+
+**NEVER run commands from the repository root or any other directory.** If you do, `uv run` won't find `pyproject.toml`, and `python` won't have access to required packages.
 
 ## Overview
 
@@ -11,16 +22,25 @@ A .docx file is a ZIP archive containing XML files.
 
 ## Python Runtime (uv)
 
-Use a skill-local `uv` environment for all Python commands in this skill.
+**CRITICAL: All Python execution in this skill MUST use `uv run --project .` from the skill directory. NEVER use bare `python3`, `python`, or `pip install` directly — the required packages (python-docx, lxml, etc.) are ONLY available inside the uv virtual environment defined by this skill's `pyproject.toml`. Direct `python3` will fail with ModuleNotFoundError.**
+
+First, ensure the environment is set up (run once per session):
 
 ```bash
+cd "$SKILL_DIR"
 bash scripts/ensure_uv_env.sh
 ```
 
-Then run Python scripts with:
+Then ALL Python commands must use this prefix:
 
 ```bash
-uv run --project . python <script-or-module>
+cd "$SKILL_DIR" && uv run --project . python <script-or-module>
+```
+
+This applies to both the provided scripts AND any inline Python code you write. For inline code, use:
+
+```bash
+cd "$SKILL_DIR" && uv run --project . python -c "import docx; ..."
 ```
 
 ## Delivery
@@ -34,11 +54,13 @@ bash scripts/upload_file.sh --file <absolute-path-to-docx>
 ```
 
 Upload command output contract:
+
 - `FILE_PATH=<absolute-path>`
 - `UPLOAD_STATUS=uploaded|skipped`
 - `DOWNLOAD_URL=<https://...>` (present only when uploaded)
 
 Delivery rules:
+
 - Use local file delivery by default; do not require API key.
 - Call `scripts/upload_file.sh` only when URL output is needed.
 - If `UPLOAD_STATUS=uploaded`, return the exact `DOWNLOAD_URL` value.
@@ -47,20 +69,20 @@ Delivery rules:
 
 ## Quick Reference
 
-| Task | Approach |
-|------|----------|
-| Prepare Python environment | `bash scripts/ensure_uv_env.sh` |
-| Read/analyze content | `pandoc` or unpack for raw XML |
-| Create new document | Use `docx-js` - see Creating New Documents below |
-| Edit existing document | Unpack → edit XML → repack - see Editing Existing Documents below |
-| Optional upload for URL | `bash scripts/upload_file.sh --file /abs/path/output.docx` |
+| Task                       | Approach                                                          |
+| -------------------------- | ----------------------------------------------------------------- |
+| Prepare Python environment | `bash scripts/ensure_uv_env.sh`                                   |
+| Read/analyze content       | `pandoc` or unpack for raw XML                                    |
+| Create new document        | Use `docx-js` - see Creating New Documents below                  |
+| Edit existing document     | Unpack → edit XML → repack - see Editing Existing Documents below |
+| Optional upload for URL    | `bash scripts/upload_file.sh --file /abs/path/output.docx`        |
 
-### Converting .doc to .docx
+### Converting .doc to .docx (requires LibreOffice)
 
-Legacy `.doc` files must be converted before editing:
+Legacy `.doc` files must be converted before editing. **Requires `soffice`; if not installed, ask the user to convert manually.**
 
 ```bash
-uv run --project . python scripts/office/soffice.py --headless --convert-to docx document.doc
+cd "$SKILL_DIR" && uv run --project . python scripts/office/soffice.py --headless --convert-to docx document.doc
 ```
 
 ### Reading Content
@@ -73,10 +95,12 @@ pandoc --track-changes=all document.docx -o output.md
 uv run --project . python scripts/office/unpack.py document.docx unpacked/
 ```
 
-### Converting to Images
+### Converting to Images (optional — requires LibreOffice)
+
+**If `soffice` is not available, skip this step.** Check first: `which soffice && echo "available" || echo "NOT available — skip"`
 
 ```bash
-uv run --project . python scripts/office/soffice.py --headless --convert-to pdf document.docx
+cd "$SKILL_DIR" && uv run --project . python scripts/office/soffice.py --headless --convert-to pdf document.docx
 pdftoppm -jpeg -r 150 document.pdf page
 ```
 
@@ -92,21 +116,54 @@ uv run --project . python scripts/accept_changes.py input.docx output.docx
 
 ## Creating New Documents
 
-Generate .docx files with JavaScript, then validate. Install: `npm install -g docx`
+Generate .docx files with JavaScript, then validate.
+
+**CRITICAL: Run all `node` commands from `$SKILL_DIR`.** The `docx` package must be installed in the skill's local `node_modules/`. If missing, run: `cd "$SKILL_DIR" && npm install docx`
 
 ### Setup
-```javascript
-const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, ImageRun,
-        Header, Footer, AlignmentType, PageOrientation, LevelFormat, ExternalHyperlink,
-        TableOfContents, HeadingLevel, BorderStyle, WidthType, ShadingType,
-        VerticalAlign, PageNumber, PageBreak } = require('docx');
 
-const doc = new Document({ sections: [{ children: [/* content */] }] });
-Packer.toBuffer(doc).then(buffer => fs.writeFileSync("doc.docx", buffer));
+```javascript
+const {
+  Document,
+  Packer,
+  Paragraph,
+  TextRun,
+  Table,
+  TableRow,
+  TableCell,
+  ImageRun,
+  Header,
+  Footer,
+  AlignmentType,
+  PageOrientation,
+  LevelFormat,
+  ExternalHyperlink,
+  TableOfContents,
+  HeadingLevel,
+  BorderStyle,
+  WidthType,
+  ShadingType,
+  VerticalAlign,
+  PageNumber,
+  PageBreak,
+} = require("docx");
+
+const doc = new Document({
+  sections: [
+    {
+      children: [
+        /* content */
+      ],
+    },
+  ],
+});
+Packer.toBuffer(doc).then((buffer) => fs.writeFileSync("doc.docx", buffer));
 ```
 
 ### Validation
+
 After creating the file, validate it. If validation fails, unpack, fix the XML, and repack.
+
 ```bash
 uv run --project . python scripts/office/validate.py doc.docx
 ```
@@ -116,28 +173,33 @@ uv run --project . python scripts/office/validate.py doc.docx
 ```javascript
 // CRITICAL: docx-js defaults to A4, not US Letter
 // Always set page size explicitly for consistent results
-sections: [{
-  properties: {
-    page: {
-      size: {
-        width: 12240,   // 8.5 inches in DXA
-        height: 15840   // 11 inches in DXA
+sections: [
+  {
+    properties: {
+      page: {
+        size: {
+          width: 12240, // 8.5 inches in DXA
+          height: 15840, // 11 inches in DXA
+        },
+        margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 }, // 1 inch margins
       },
-      margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 } // 1 inch margins
-    }
+    },
+    children: [
+      /* content */
+    ],
   },
-  children: [/* content */]
-}]
+];
 ```
 
 **Common page sizes (DXA units, 1440 DXA = 1 inch):**
 
-| Paper | Width | Height | Content Width (1" margins) |
-|-------|-------|--------|---------------------------|
-| US Letter | 12,240 | 15,840 | 9,360 |
-| A4 (default) | 11,906 | 16,838 | 9,026 |
+| Paper        | Width  | Height | Content Width (1" margins) |
+| ------------ | ------ | ------ | -------------------------- |
+| US Letter    | 12,240 | 15,840 | 9,360                      |
+| A4 (default) | 11,906 | 16,838 | 9,026                      |
 
 **Landscape orientation:** docx-js swaps width/height internally, so pass portrait dimensions and let it handle the swap:
+
 ```javascript
 size: {
   width: 12240,   // Pass SHORT edge as width
@@ -157,19 +219,33 @@ const doc = new Document({
     default: { document: { run: { font: "Arial", size: 24 } } }, // 12pt default
     paragraphStyles: [
       // IMPORTANT: Use exact IDs to override built-in styles
-      { id: "Heading1", name: "Heading 1", basedOn: "Normal", next: "Normal", quickFormat: true,
+      {
+        id: "Heading1",
+        name: "Heading 1",
+        basedOn: "Normal",
+        next: "Normal",
+        quickFormat: true,
         run: { size: 32, bold: true, font: "Arial" },
-        paragraph: { spacing: { before: 240, after: 240 }, outlineLevel: 0 } }, // outlineLevel required for TOC
-      { id: "Heading2", name: "Heading 2", basedOn: "Normal", next: "Normal", quickFormat: true,
+        paragraph: { spacing: { before: 240, after: 240 }, outlineLevel: 0 },
+      }, // outlineLevel required for TOC
+      {
+        id: "Heading2",
+        name: "Heading 2",
+        basedOn: "Normal",
+        next: "Normal",
+        quickFormat: true,
         run: { size: 28, bold: true, font: "Arial" },
-        paragraph: { spacing: { before: 180, after: 180 }, outlineLevel: 1 } },
-    ]
+        paragraph: { spacing: { before: 180, after: 180 }, outlineLevel: 1 },
+      },
+    ],
   },
-  sections: [{
-    children: [
-      new Paragraph({ heading: HeadingLevel.HEADING_1, children: [new TextRun("Title")] }),
-    ]
-  }]
+  sections: [
+    {
+      children: [
+        new Paragraph({ heading: HeadingLevel.HEADING_1, children: [new TextRun("Title")] }),
+      ],
+    },
+  ],
 });
 ```
 
@@ -177,29 +253,53 @@ const doc = new Document({
 
 ```javascript
 // ❌ WRONG - never manually insert bullet characters
-new Paragraph({ children: [new TextRun("• Item")] })  // BAD
-new Paragraph({ children: [new TextRun("\u2022 Item")] })  // BAD
+new Paragraph({ children: [new TextRun("• Item")] }); // BAD
+new Paragraph({ children: [new TextRun("\u2022 Item")] }); // BAD
 
 // ✅ CORRECT - use numbering config with LevelFormat.BULLET
 const doc = new Document({
   numbering: {
     config: [
-      { reference: "bullets",
-        levels: [{ level: 0, format: LevelFormat.BULLET, text: "•", alignment: AlignmentType.LEFT,
-          style: { paragraph: { indent: { left: 720, hanging: 360 } } } }] },
-      { reference: "numbers",
-        levels: [{ level: 0, format: LevelFormat.DECIMAL, text: "%1.", alignment: AlignmentType.LEFT,
-          style: { paragraph: { indent: { left: 720, hanging: 360 } } } }] },
-    ]
+      {
+        reference: "bullets",
+        levels: [
+          {
+            level: 0,
+            format: LevelFormat.BULLET,
+            text: "•",
+            alignment: AlignmentType.LEFT,
+            style: { paragraph: { indent: { left: 720, hanging: 360 } } },
+          },
+        ],
+      },
+      {
+        reference: "numbers",
+        levels: [
+          {
+            level: 0,
+            format: LevelFormat.DECIMAL,
+            text: "%1.",
+            alignment: AlignmentType.LEFT,
+            style: { paragraph: { indent: { left: 720, hanging: 360 } } },
+          },
+        ],
+      },
+    ],
   },
-  sections: [{
-    children: [
-      new Paragraph({ numbering: { reference: "bullets", level: 0 },
-        children: [new TextRun("Bullet item")] }),
-      new Paragraph({ numbering: { reference: "numbers", level: 0 },
-        children: [new TextRun("Numbered item")] }),
-    ]
-  }]
+  sections: [
+    {
+      children: [
+        new Paragraph({
+          numbering: { reference: "bullets", level: 0 },
+          children: [new TextRun("Bullet item")],
+        }),
+        new Paragraph({
+          numbering: { reference: "numbers", level: 0 },
+          children: [new TextRun("Numbered item")],
+        }),
+      ],
+    },
+  ],
 });
 
 // ⚠️ Each reference creates INDEPENDENT numbering
@@ -228,12 +328,12 @@ new Table({
           width: { size: 4680, type: WidthType.DXA }, // Also set on each cell
           shading: { fill: "D5E8F0", type: ShadingType.CLEAR }, // CLEAR not SOLID
           margins: { top: 80, bottom: 80, left: 120, right: 120 }, // Cell padding (internal, not added to width)
-          children: [new Paragraph({ children: [new TextRun("Cell")] })]
-        })
-      ]
-    })
-  ]
-})
+          children: [new Paragraph({ children: [new TextRun("Cell")] })],
+        }),
+      ],
+    }),
+  ],
+});
 ```
 
 **Table width calculation:**
@@ -248,6 +348,7 @@ columnWidths: [7000, 2360]  // Must sum to table width
 ```
 
 **Width rules:**
+
 - **Always use `WidthType.DXA`** — never `WidthType.PERCENTAGE` (incompatible with Google Docs)
 - Table width must equal the sum of `columnWidths`
 - Cell `width` must match corresponding `columnWidth`
@@ -259,49 +360,59 @@ columnWidths: [7000, 2360]  // Must sum to table width
 ```javascript
 // CRITICAL: type parameter is REQUIRED
 new Paragraph({
-  children: [new ImageRun({
-    type: "png", // Required: png, jpg, jpeg, gif, bmp, svg
-    data: fs.readFileSync("image.png"),
-    transformation: { width: 200, height: 150 },
-    altText: { title: "Title", description: "Desc", name: "Name" } // All three required
-  })]
-})
+  children: [
+    new ImageRun({
+      type: "png", // Required: png, jpg, jpeg, gif, bmp, svg
+      data: fs.readFileSync("image.png"),
+      transformation: { width: 200, height: 150 },
+      altText: { title: "Title", description: "Desc", name: "Name" }, // All three required
+    }),
+  ],
+});
 ```
 
 ### Page Breaks
 
 ```javascript
 // CRITICAL: PageBreak must be inside a Paragraph
-new Paragraph({ children: [new PageBreak()] })
+new Paragraph({ children: [new PageBreak()] });
 
 // Or use pageBreakBefore
-new Paragraph({ pageBreakBefore: true, children: [new TextRun("New page")] })
+new Paragraph({ pageBreakBefore: true, children: [new TextRun("New page")] });
 ```
 
 ### Table of Contents
 
 ```javascript
 // CRITICAL: Headings must use HeadingLevel ONLY - no custom styles
-new TableOfContents("Table of Contents", { hyperlink: true, headingStyleRange: "1-3" })
+new TableOfContents("Table of Contents", { hyperlink: true, headingStyleRange: "1-3" });
 ```
 
 ### Headers/Footers
 
 ```javascript
-sections: [{
-  properties: {
-    page: { margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 } } // 1440 = 1 inch
+sections: [
+  {
+    properties: {
+      page: { margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 } }, // 1440 = 1 inch
+    },
+    headers: {
+      default: new Header({ children: [new Paragraph({ children: [new TextRun("Header")] })] }),
+    },
+    footers: {
+      default: new Footer({
+        children: [
+          new Paragraph({
+            children: [new TextRun("Page "), new TextRun({ children: [PageNumber.CURRENT] })],
+          }),
+        ],
+      }),
+    },
+    children: [
+      /* content */
+    ],
   },
-  headers: {
-    default: new Header({ children: [new Paragraph({ children: [new TextRun("Header")] })] })
-  },
-  footers: {
-    default: new Footer({ children: [new Paragraph({
-      children: [new TextRun("Page "), new TextRun({ children: [PageNumber.CURRENT] })]
-    })] })
-  },
-  children: [/* content */]
-}]
+];
 ```
 
 ### Critical Rules for docx-js
@@ -328,9 +439,11 @@ sections: [{
 **Follow all 3 steps in order.**
 
 ### Step 1: Unpack
+
 ```bash
 uv run --project . python scripts/office/unpack.py document.docx unpacked/
 ```
+
 Extracts XML, pretty-prints, merges adjacent runs, and converts smart quotes to XML entities (`&#x201C;` etc.) so they survive editing. Use `--merge-runs false` to skip run merging.
 
 ### Step 2: Edit XML
@@ -342,36 +455,44 @@ Edit files in `unpacked/word/`. See XML Reference below for patterns.
 **Use the Edit tool directly for string replacement. Do not write Python scripts.** Scripts introduce unnecessary complexity. The Edit tool shows exactly what is being replaced.
 
 **CRITICAL: Use smart quotes for new content.** When adding text with apostrophes or quotes, use XML entities to produce smart quotes:
+
 ```xml
 <!-- Use these entities for professional typography -->
 <w:t>Here&#x2019;s a quote: &#x201C;Hello&#x201D;</w:t>
 ```
-| Entity | Character |
-|--------|-----------|
-| `&#x2018;` | ‘ (left single) |
+
+| Entity     | Character                     |
+| ---------- | ----------------------------- |
+| `&#x2018;` | ‘ (left single)               |
 | `&#x2019;` | ’ (right single / apostrophe) |
-| `&#x201C;` | “ (left double) |
-| `&#x201D;` | ” (right double) |
+| `&#x201C;` | “ (left double)               |
+| `&#x201D;` | ” (right double)              |
 
 **Adding comments:** Use `comment.py` to handle boilerplate across multiple XML files (text must be pre-escaped XML):
+
 ```bash
 uv run --project . python scripts/comment.py unpacked/ 0 "Comment text with &amp; and &#x2019;"
 uv run --project . python scripts/comment.py unpacked/ 1 "Reply text" --parent 0  # reply to comment 0
 uv run --project . python scripts/comment.py unpacked/ 0 "Text" --author "Custom Author"  # custom author name
 ```
+
 Then add markers to document.xml (see Comments in XML Reference).
 
 ### Step 3: Pack
+
 ```bash
 uv run --project . python scripts/office/pack.py unpacked/ output.docx --original document.docx
 ```
+
 Validates with auto-repair, condenses XML, and creates DOCX. Use `--validate false` to skip.
 
 **Auto-repair will fix:**
+
 - `durableId` >= 0x7FFFFFFF (regenerates valid ID)
 - Missing `xml:space="preserve"` on `<w:t>` with whitespace
 
 **Auto-repair won't fix:**
+
 - Malformed XML, invalid element nesting, missing relationships, schema violations
 
 ### Common Pitfalls
@@ -392,6 +513,7 @@ Validates with auto-repair, condenses XML, and creates DOCX. Use `--validate fal
 ### Tracked Changes
 
 **Insertion:**
+
 ```xml
 <w:ins w:id="1" w:author="Claude" w:date="2025-01-01T00:00:00Z">
   <w:r><w:t>inserted text</w:t></w:r>
@@ -399,6 +521,7 @@ Validates with auto-repair, condenses XML, and creates DOCX. Use `--validate fal
 ```
 
 **Deletion:**
+
 ```xml
 <w:del w:id="2" w:author="Claude" w:date="2025-01-01T00:00:00Z">
   <w:r><w:delText>deleted text</w:delText></w:r>
@@ -408,6 +531,7 @@ Validates with auto-repair, condenses XML, and creates DOCX. Use `--validate fal
 **Inside `<w:del>`**: Use `<w:delText>` instead of `<w:t>`, and `<w:delInstrText>` instead of `<w:instrText>`.
 
 **Minimal edits** - only mark what changes:
+
 ```xml
 <!-- Change "30 days" to "60 days" -->
 <w:r><w:t>The term is </w:t></w:r>
@@ -421,6 +545,7 @@ Validates with auto-repair, condenses XML, and creates DOCX. Use `--validate fal
 ```
 
 **Deleting entire paragraphs/list items** - when removing ALL content from a paragraph, also mark the paragraph mark as deleted so it merges with the next paragraph. Add `<w:del/>` inside `<w:pPr><w:rPr>`:
+
 ```xml
 <w:p>
   <w:pPr>
@@ -434,9 +559,11 @@ Validates with auto-repair, condenses XML, and creates DOCX. Use `--validate fal
   </w:del>
 </w:p>
 ```
+
 Without the `<w:del/>` in `<w:pPr><w:rPr>`, accepting changes leaves an empty paragraph/list item.
 
 **Rejecting another author's insertion** - nest deletion inside their insertion:
+
 ```xml
 <w:ins w:author="Jane" w:id="5">
   <w:del w:author="Claude" w:id="10">
@@ -446,6 +573,7 @@ Without the `<w:del/>` in `<w:pPr><w:rPr>`, accepting changes leaves an empty pa
 ```
 
 **Restoring another author's deletion** - add insertion after (don't modify their deletion):
+
 ```xml
 <w:del w:author="Jane" w:id="5">
   <w:r><w:delText>deleted text</w:delText></w:r>
@@ -485,14 +613,19 @@ After running `comment.py` (see Step 2), add markers to document.xml. For replie
 
 1. Add image file to `word/media/`
 2. Add relationship to `word/_rels/document.xml.rels`:
+
 ```xml
 <Relationship Id="rId5" Type=".../image" Target="media/image1.png"/>
 ```
+
 3. Add content type to `[Content_Types].xml`:
+
 ```xml
 <Default Extension="png" ContentType="image/png"/>
 ```
+
 4. Reference in document.xml:
+
 ```xml
 <w:drawing>
   <wp:inline>
@@ -514,6 +647,6 @@ After running `comment.py` (see Step 2), add markers to document.xml. For replie
 
 - **uv**: Python environment and dependency manager for this skill (`bash scripts/ensure_uv_env.sh`)
 - **pandoc**: Text extraction
-- **docx**: `npm install -g docx` (new documents)
-- **LibreOffice**: PDF conversion (auto-configured for sandboxed environments via `scripts/office/soffice.py`)
-- **Poppler**: `pdftoppm` for images
+- **docx**: installed locally in skill `node_modules/` (if missing run `cd <skill-dir> && npm install docx`)
+- **LibreOffice**: PDF conversion (**optional**; skip image conversion if not installed)
+- **Poppler**: `pdftoppm` for images (**optional**; used with LibreOffice)
