@@ -384,8 +384,20 @@ new Paragraph({ pageBreakBefore: true, children: [new TextRun("New page")] });
 ### Table of Contents
 
 ```javascript
-// CRITICAL: Headings must use HeadingLevel ONLY - no custom styles
-new TableOfContents("Table of Contents", { hyperlink: true, headingStyleRange: "1-3" });
+// CRITICAL: TableOfContents must be a DIRECT child of section's children array
+// NEVER wrap it in a Paragraph — it is a block-level element like Paragraph and Table
+sections: [
+  {
+    children: [
+      // ✅ CORRECT - TableOfContents directly in children array
+      new TableOfContents("Table of Contents", { hyperlink: true, headingStyleRange: "1-3" }),
+      new Paragraph({ heading: HeadingLevel.HEADING_1, children: [new TextRun("Chapter 1")] }),
+    ],
+  },
+];
+
+// ❌ WRONG - wrapping in Paragraph creates nested <w:p> (invalid XML)
+new Paragraph({ children: [new TableOfContents("TOC", { ... })] }); // BAD - causes XSD validation error
 ```
 
 ### Headers/Footers

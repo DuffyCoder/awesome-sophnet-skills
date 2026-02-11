@@ -1,6 +1,6 @@
 ---
 name: sophnet-pdf
-description: Use this skill whenever the user wants to do anything with PDF files. This includes reading or extracting text/tables from PDFs, combining or merging multiple PDFs into one, splitting PDFs apart, rotating pages, adding watermarks, creating new PDFs, filling PDF forms, encrypting/decrypting PDFs, extracting images, and OCR on scanned PDFs to make them searchable. If the user mentions a .pdf file or asks to produce one, use this skill.
+description: Use this skill for ALL PDF tasks — creating new PDFs from scratch (reports, whitepapers, invoices, certificates, resumes, charts, presentations), generating complex styled PDF documents with tables/charts/images/multi-page layouts, as well as reading/extracting text and tables, merging/splitting, rotating pages, adding watermarks, filling forms, encrypting/decrypting, extracting images, and OCR. This skill provides a managed Python environment (uv + reportlab/pypdf/pdfplumber) that handles dependencies automatically. Always use this skill whenever the user mentions PDF, .pdf, or asks to create, generate, produce, design, or build any PDF document. Do NOT write standalone Python scripts outside this skill — use the skill's uv environment instead.
 ---
 
 # PDF Processing Guide
@@ -23,6 +23,8 @@ This guide covers essential PDF processing operations using Python libraries and
 ## Python Runtime (uv)
 
 **CRITICAL: All Python execution in this skill MUST use `uv run --project .` from the skill directory. NEVER use bare `python3`, `python`, or `pip install` directly — the required packages (pdfplumber, reportlab, pypdf, etc.) are ONLY available inside the uv virtual environment defined by this skill's `pyproject.toml`. Direct `python3` will fail with ModuleNotFoundError.**
+
+**IMPORTANT: Only use libraries available in this skill's pyproject.toml (reportlab, pypdf, pdfplumber, pillow, pdf2image, pymupdf). Do NOT import matplotlib, numpy, pandas, or other packages not listed — they will cause ModuleNotFoundError. For charts/graphs, use `reportlab.graphics.charts` (VerticalBarChart, HorizontalBarChart, Pie, etc.) instead of matplotlib.**
 
 First, ensure the environment is set up (run once per session):
 
