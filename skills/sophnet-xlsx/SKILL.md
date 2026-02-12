@@ -16,6 +16,18 @@ cd "$SKILL_DIR"
 
 **NEVER run commands from the repository root or any other directory.** If you do, `uv run` won't find `pyproject.toml`, and `python` won't have access to required packages.
 
+## MANDATORY: Cleanup — Zero Residual Files
+
+**CRITICAL: After every task, `$SKILL_DIR` must contain ONLY these permanent files:** `SKILL.md`, `pyproject.toml`, `uv.lock`, `scripts/`, `.venv/`. **NOTHING else.** No `.py` scripts, no generated `.xlsx` files.
+
+Two enforced rules (non-negotiable):
+
+1. **Python scripts MUST go to `/tmp/`.** Always save scripts as `/tmp/_tmp_xlsx.py` (this exact name), execute, then delete:
+   ```bash
+   cd "$SKILL_DIR" && uv run --project . python /tmp/_tmp_xlsx.py; rm -f /tmp/_tmp_xlsx.py
+   ```
+2. **NEVER create any file inside `$SKILL_DIR`.** All output files go to the user-specified path or `/tmp/`.
+
 ## Delivery
 
 Local spreadsheet creation/editing does not require any Sophnet API key.

@@ -5,10 +5,12 @@
 When using an existing presentation as a template:
 
 1. **Analyze existing slides**:
+
    ```bash
    python scripts/thumbnail.py template.pptx
    python -m markitdown template.pptx
    ```
+
    Review `thumbnails.jpg` to see layouts, and markitdown output to see placeholder text.
 
 2. **Plan slide mapping**: For each content section, choose a template slide.
@@ -26,7 +28,7 @@ When using an existing presentation as a template:
 
    Match content type to layout style (e.g., key points → bullet slide, team info → multi-column, testimonials → quote slide).
 
-3. **Unpack**: `python scripts/office/unpack.py template.pptx unpacked/`
+3. **Unpack**: `python scripts/office/unpack.py template.pptx /tmp/_tmp_pptx_unpacked/`
 
 4. **Build presentation** (do this yourself, not with subagents):
    - Delete unwanted slides (remove from `<p:sldIdLst>`)
@@ -39,33 +41,33 @@ When using an existing presentation as a template:
 
 6. **Clean**: `python scripts/clean.py unpacked/`
 
-7. **Pack**: `python scripts/office/pack.py unpacked/ output.pptx --original template.pptx`
+7. **Pack and cleanup**: `python scripts/office/pack.py /tmp/_tmp_pptx_unpacked/ output.pptx --original template.pptx && rm -rf /tmp/_tmp_pptx_unpacked/`
 
 ---
 
 ## Scripts
 
-| Script | Purpose |
-|--------|---------|
-| `unpack.py` | Extract and pretty-print PPTX |
+| Script         | Purpose                               |
+| -------------- | ------------------------------------- |
+| `unpack.py`    | Extract and pretty-print PPTX         |
 | `add_slide.py` | Duplicate slide or create from layout |
-| `clean.py` | Remove orphaned files |
-| `pack.py` | Repack with validation |
-| `thumbnail.py` | Create visual grid of slides |
+| `clean.py`     | Remove orphaned files                 |
+| `pack.py`      | Repack with validation                |
+| `thumbnail.py` | Create visual grid of slides          |
 
 ### unpack.py
 
 ```bash
-python scripts/office/unpack.py input.pptx unpacked/
+python scripts/office/unpack.py input.pptx /tmp/_tmp_pptx_unpacked/
 ```
 
-Extracts PPTX, pretty-prints XML, escapes smart quotes.
+Extracts PPTX, pretty-prints XML, escapes smart quotes. **Always unpack to `/tmp/`, never to `$SKILL_DIR`.**
 
 ### add_slide.py
 
 ```bash
-python scripts/add_slide.py unpacked/ slide2.xml      # Duplicate slide
-python scripts/add_slide.py unpacked/ slideLayout2.xml # From layout
+python scripts/add_slide.py /tmp/_tmp_pptx_unpacked/ slide2.xml      # Duplicate slide
+python scripts/add_slide.py /tmp/_tmp_pptx_unpacked/ slideLayout2.xml # From layout
 ```
 
 Prints `<p:sldId>` to add to `<p:sldIdLst>` at desired position.
@@ -73,7 +75,7 @@ Prints `<p:sldId>` to add to `<p:sldIdLst>` at desired position.
 ### clean.py
 
 ```bash
-python scripts/clean.py unpacked/
+python scripts/clean.py /tmp/_tmp_pptx_unpacked/
 ```
 
 Removes slides not in `<p:sldIdLst>`, unreferenced media, orphaned rels.
@@ -81,10 +83,11 @@ Removes slides not in `<p:sldIdLst>`, unreferenced media, orphaned rels.
 ### pack.py
 
 ```bash
-python scripts/office/pack.py unpacked/ output.pptx --original input.pptx
+python scripts/office/pack.py /tmp/_tmp_pptx_unpacked/ output.pptx --original input.pptx
+rm -rf /tmp/_tmp_pptx_unpacked/
 ```
 
-Validates, repairs, condenses XML, re-encodes smart quotes.
+Validates, repairs, condenses XML, re-encodes smart quotes. **Always delete the unpack directory after packing.**
 
 ### thumbnail.py
 
@@ -113,11 +116,13 @@ Slide order is in `ppt/presentation.xml` → `<p:sldIdLst>`.
 ## Editing Content
 
 **Subagents:** If available, use them here (after completing step 4). Each slide is a separate XML file, so subagents can edit in parallel. In your prompt to subagents, include:
+
 - The slide file path(s) to edit
 - **"Use the Edit tool for all changes"**
 - The formatting rules and common pitfalls below
 
 For each slide:
+
 1. Read the slide's XML
 2. Identify ALL placeholder content—text, images, charts, icons, captions
 3. Replace each placeholder with final content
@@ -140,11 +145,13 @@ For each slide:
 ### Template Adaptation
 
 When source content has fewer items than the template:
+
 - **Remove excess elements entirely** (images, shapes, text boxes), don't just clear text
 - Check for orphaned visuals after clearing text content
 - Run visual QA to catch mismatched counts
 
 When replacing text with different length content:
+
 - **Shorter replacements**: Usually safe
 - **Longer replacements**: May overflow or wrap unexpectedly
 - Test with visual QA after text changes
@@ -157,6 +164,7 @@ When replacing text with different length content:
 If source has multiple items (numbered lists, multiple sections), create separate `<a:p>` elements for each — **never concatenate into one string**.
 
 **❌ WRONG** — all items in one paragraph:
+
 ```xml
 <a:p>
   <a:r><a:rPr .../><a:t>Step 1: Do the first thing. Step 2: Do the second thing.</a:t></a:r>
@@ -164,6 +172,7 @@ If source has multiple items (numbered lists, multiple sections), create separat
 ```
 
 **✅ CORRECT** — separate paragraphs with bold headers:
+
 ```xml
 <a:p>
   <a:pPr algn="l"><a:lnSpc><a:spcPts val="3919"/></a:lnSpc></a:pPr>
@@ -192,12 +201,12 @@ Handled automatically by unpack/pack. But the Edit tool converts smart quotes to
 <a:t>the &#x201C;Agreement&#x201D;</a:t>
 ```
 
-| Character | Name | Unicode | XML Entity |
-|-----------|------|---------|------------|
-| `“` | Left double quote | U+201C | `&#x201C;` |
-| `”` | Right double quote | U+201D | `&#x201D;` |
-| `‘` | Left single quote | U+2018 | `&#x2018;` |
-| `’` | Right single quote | U+2019 | `&#x2019;` |
+| Character | Name               | Unicode | XML Entity |
+| --------- | ------------------ | ------- | ---------- |
+| `“`       | Left double quote  | U+201C  | `&#x201C;` |
+| `”`       | Right double quote | U+201D  | `&#x201D;` |
+| `‘`       | Left single quote  | U+2018  | `&#x2018;` |
+| `’`       | Right single quote | U+2019  | `&#x2019;` |
 
 ### Other
 

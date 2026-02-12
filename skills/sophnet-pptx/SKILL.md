@@ -1,6 +1,6 @@
 ---
 name: sophnet-pptx
-description: "Use this skill any time a .pptx file is involved in any way — as input, output, or both. This includes: creating slide decks, pitch decks, or presentations; reading, parsing, or extracting text from any .pptx file (even if the extracted content will be used elsewhere, like in an email or summary); editing, modifying, or updating existing presentations; combining or splitting slide files; working with templates, layouts, speaker notes, or comments. Trigger whenever the user mentions \"deck,\" \"slides,\" \"presentation,\" or references a .pptx filename, regardless of what they plan to do with the content afterward. If a .pptx file needs to be opened, created, or touched, use this skill."
+description: 'Use this skill any time a .pptx file is involved in any way — as input, output, or both. This includes: creating slide decks, pitch decks, or presentations; reading, parsing, or extracting text from any .pptx file (even if the extracted content will be used elsewhere, like in an email or summary); editing, modifying, or updating existing presentations; combining or splitting slide files; working with templates, layouts, speaker notes, or comments. Trigger whenever the user mentions "deck," "slides," "presentation," or references a .pptx filename, regardless of what they plan to do with the content afterward. If a .pptx file needs to be opened, created, or touched, use this skill.'
 ---
 
 # PPTX Skill
@@ -17,15 +17,25 @@ cd "$SKILL_DIR"
 
 **NEVER run commands from the repository root or any other directory.** If you do, `node` won't find `.js` files, `uv run` won't find `pyproject.toml`, and `python` won't have access to required packages.
 
+## MANDATORY: Cleanup — Zero Residual Files
+
+**CRITICAL: After every task, `$SKILL_DIR` must contain ONLY these permanent files:** `SKILL.md`, `editing.md`, `pptxgenjs.md`, `pyproject.toml`, `uv.lock`, `package.json`, `package-lock.json`, `node_modules/`, `scripts/`, `.venv/`. **NOTHING else.** No `.js` scripts, no `unpacked*/` directories, no `.py` scripts, no generated `.pptx` files, no thumbnail images.
+
+Three enforced rules (non-negotiable):
+
+1. **JS scripts MUST self-delete.** Every `.js` file you create MUST include `try { require("fs").unlinkSync(__filename); } catch(e) {}` as the LAST statement in the script (after `writeFile` resolves). Additionally, run with: `cd "$SKILL_DIR" && node _tmp_pptx.js; rm -f _tmp_pptx.js`
+2. **Unpack to `/tmp/` only.** NEVER unpack into `$SKILL_DIR`. Use `/tmp/_tmp_pptx_unpacked/` and `rm -rf` it after packing.
+3. **Python scripts and thumbnails go to `/tmp/`.** Write Python scripts to `/tmp/_tmp_*.py` and delete after execution. Generate thumbnails to `/tmp/`.
+
 ## Quick Reference
 
-| Task | Guide |
-|------|-------|
-| Prepare Python environment | `cd $SKILL_DIR && bash scripts/ensure_uv_env.sh` |
-| Read/analyze content | `cd $SKILL_DIR && uv run --project . python -m markitdown presentation.pptx` |
-| Edit or create from template | Read [editing.md](editing.md) |
-| Create from scratch | Read [pptxgenjs.md](pptxgenjs.md) |
-| Optional upload for URL | `cd $SKILL_DIR && bash scripts/upload_file.sh --file /abs/path/output.pptx` |
+| Task                         | Guide                                                       |
+| ---------------------------- | ----------------------------------------------------------- |
+| Prepare Python environment   | `cd $SKILL_DIR && bash scripts/ensure_uv_env.sh`            |
+| Read/analyze content         | `cd $SKILL_DIR && uv run --project . python -m markitdown presentation.pptx` |
+| Edit or create from template | Read [editing.md](editing.md)                               |
+| Create from scratch          | Read [pptxgenjs.md](pptxgenjs.md)                           |
+| Optional upload for URL      | `cd $SKILL_DIR && bash scripts/upload_file.sh --file /abs/path/output.pptx` |
 
 ## Python Runtime (uv)
 
@@ -55,15 +65,15 @@ cd "$SKILL_DIR" && uv run --project . python -c "from pptx import Presentation; 
 **CRITICAL: All Node.js execution for creating presentations from scratch MUST run from this skill directory.** The `pptxgenjs`, `react-icons`, `sharp` etc. packages are installed in this skill's local `node_modules/`. Running `node` from any other directory will fail with `Cannot find module`.
 
 ```bash
-# CORRECT — always cd first, then run node
-cd "$SKILL_DIR" && node create_presentation.js
+# CORRECT — always use _tmp_pptx.js, script self-deletes, shell rm as backup
+cd "$SKILL_DIR" && node _tmp_pptx.js; rm -f _tmp_pptx.js
 
 # WRONG — running from repo root or other directory
 node create_presentation.js              # ✗ Cannot find module
 node /some/other/path/create_ppt.js      # ✗ Cannot find module 'pptxgenjs'
 ```
 
-When writing a `.js` file to create slides, save it inside `$SKILL_DIR` (e.g. `$SKILL_DIR/create_presentation.js`), then execute from `$SKILL_DIR`.
+Always save the script as `$SKILL_DIR/_tmp_pptx.js`. The script MUST include `try { require("fs").unlinkSync(__filename); } catch(e) {}` as its last statement to self-delete. The shell `rm -f` is a backup.
 
 ## Delivery
 
@@ -76,11 +86,13 @@ bash scripts/upload_file.sh --file <absolute-path-to-pptx>
 ```
 
 Upload command output contract:
+
 - `FILE_PATH=<absolute-path>`
 - `UPLOAD_STATUS=uploaded|skipped`
 - `DOWNLOAD_URL=<https://...>` (present only when uploaded)
 
 Delivery rules:
+
 - Use local file delivery by default; do not require API key.
 - Call `scripts/upload_file.sh` only when URL output is needed.
 - If `UPLOAD_STATUS=uploaded`, return the exact `DOWNLOAD_URL` value.
@@ -98,8 +110,8 @@ uv run --project . python -m markitdown presentation.pptx
 # Visual overview
 uv run --project . python scripts/thumbnail.py presentation.pptx
 
-# Raw XML
-uv run --project . python scripts/office/unpack.py presentation.pptx unpacked/
+# Raw XML (always unpack to /tmp/, never to $SKILL_DIR)
+uv run --project . python scripts/office/unpack.py presentation.pptx /tmp/_tmp_pptx_unpacked/
 ```
 
 ---
@@ -121,15 +133,16 @@ Use when no template or reference presentation is available. **You MUST follow t
 
 1. **Read the API reference FIRST** — open and read [pptxgenjs.md](pptxgenjs.md) in full before writing any code. It contains correct syntax, required enums, and a Common Pitfalls section that prevents crashes.
 
-2. **Write a `.js` file inside `$SKILL_DIR`** — save your script as e.g. `$SKILL_DIR/create_presentation.js`. Key rules from the reference:
+2. **Write `$SKILL_DIR/_tmp_pptx.js`** (always this exact filename). Key rules from the reference:
    - Shape enum: `pres.shapes.RECTANGLE`, NOT string `'rect'` or `'RECTANGLE'`
    - Color: `"FF0000"` (6-char hex, no `#` prefix)
    - Background: `slide.background = { color: "HEXVAL" }` (use `color` key, not `path`)
    - Save with: `pres.writeFile({ fileName: "/tmp/output.pptx" })`
+   - **MANDATORY last line**: `try { require("fs").unlinkSync(__filename); } catch(e) {}` — the script deletes itself
 
-3. **Run from `$SKILL_DIR`** — the local `node_modules/` with pptxgenjs is here:
+3. **Run from `$SKILL_DIR` with shell-level cleanup as backup**:
    ```bash
-   cd "$SKILL_DIR" && node create_presentation.js
+   cd "$SKILL_DIR" && node _tmp_pptx.js; rm -f _tmp_pptx.js
    ```
 
 4. **Verify** — check the output file exists, then use markitdown for content QA:
@@ -145,6 +158,7 @@ Use when no template or reference presentation is available. **You MUST follow t
 ### What NOT to do
 
 - Do NOT write or run `.js` files from the repository root — `require('pptxgenjs')` will fail
+- Do NOT leave `.js` scripts in `$SKILL_DIR` after execution — always delete `_tmp_*` files
 - Do NOT guess the pptxgenjs API — always refer to [pptxgenjs.md](pptxgenjs.md)
 - Do NOT use string shape names like `'rect'` — use `pres.shapes.RECTANGLE`
 - Do NOT skip reading [pptxgenjs.md](pptxgenjs.md) before coding
@@ -166,35 +180,38 @@ Use when no template or reference presentation is available. **You MUST follow t
 
 Choose colors that match your topic — don't default to generic blue. Use these palettes as inspiration:
 
-| Theme | Primary | Secondary | Accent |
-|-------|---------|-----------|--------|
-| **Midnight Executive** | `1E2761` (navy) | `CADCFC` (ice blue) | `FFFFFF` (white) |
-| **Forest & Moss** | `2C5F2D` (forest) | `97BC62` (moss) | `F5F5F5` (cream) |
-| **Coral Energy** | `F96167` (coral) | `F9E795` (gold) | `2F3C7E` (navy) |
-| **Warm Terracotta** | `B85042` (terracotta) | `E7E8D1` (sand) | `A7BEAE` (sage) |
-| **Ocean Gradient** | `065A82` (deep blue) | `1C7293` (teal) | `21295C` (midnight) |
-| **Charcoal Minimal** | `36454F` (charcoal) | `F2F2F2` (off-white) | `212121` (black) |
-| **Teal Trust** | `028090` (teal) | `00A896` (seafoam) | `02C39A` (mint) |
-| **Berry & Cream** | `6D2E46` (berry) | `A26769` (dusty rose) | `ECE2D0` (cream) |
-| **Sage Calm** | `84B59F` (sage) | `69A297` (eucalyptus) | `50808E` (slate) |
-| **Cherry Bold** | `990011` (cherry) | `FCF6F5` (off-white) | `2F3C7E` (navy) |
+| Theme                  | Primary               | Secondary             | Accent              |
+| ---------------------- | --------------------- | --------------------- | ------------------- |
+| **Midnight Executive** | `1E2761` (navy)       | `CADCFC` (ice blue)   | `FFFFFF` (white)    |
+| **Forest & Moss**      | `2C5F2D` (forest)     | `97BC62` (moss)       | `F5F5F5` (cream)    |
+| **Coral Energy**       | `F96167` (coral)      | `F9E795` (gold)       | `2F3C7E` (navy)     |
+| **Warm Terracotta**    | `B85042` (terracotta) | `E7E8D1` (sand)       | `A7BEAE` (sage)     |
+| **Ocean Gradient**     | `065A82` (deep blue)  | `1C7293` (teal)       | `21295C` (midnight) |
+| **Charcoal Minimal**   | `36454F` (charcoal)   | `F2F2F2` (off-white)  | `212121` (black)    |
+| **Teal Trust**         | `028090` (teal)       | `00A896` (seafoam)    | `02C39A` (mint)     |
+| **Berry & Cream**      | `6D2E46` (berry)      | `A26769` (dusty rose) | `ECE2D0` (cream)    |
+| **Sage Calm**          | `84B59F` (sage)       | `69A297` (eucalyptus) | `50808E` (slate)    |
+| **Cherry Bold**        | `990011` (cherry)     | `FCF6F5` (off-white)  | `2F3C7E` (navy)     |
 
 ### For Each Slide
 
 **Every slide needs a visual element** — image, chart, icon, or shape. Text-only slides are forgettable.
 
 **Layout options:**
+
 - Two-column (text left, illustration on right)
 - Icon + text rows (icon in colored circle, bold header, description below)
 - 2x2 or 2x3 grid (image on one side, grid of content blocks on other)
 - Half-bleed image (full left or right side) with content overlay
 
 **Data display:**
+
 - Large stat callouts (big numbers 60-72pt with small labels below)
 - Comparison columns (before/after, pros/cons, side-by-side options)
 - Timeline or process flow (numbered steps, arrows)
 
 **Visual polish:**
+
 - Icons in small colored circles next to section headers
 - Italic accent text for key stats or taglines
 
@@ -202,23 +219,23 @@ Choose colors that match your topic — don't default to generic blue. Use these
 
 **Choose an interesting font pairing** — don't default to Arial. Pick a header font with personality and pair it with a clean body font.
 
-| Header Font | Body Font |
-|-------------|-----------|
-| Georgia | Calibri |
-| Arial Black | Arial |
-| Calibri | Calibri Light |
-| Cambria | Calibri |
-| Trebuchet MS | Calibri |
-| Impact | Arial |
-| Palatino | Garamond |
-| Consolas | Calibri |
+| Header Font  | Body Font     |
+| ------------ | ------------- |
+| Georgia      | Calibri       |
+| Arial Black  | Arial         |
+| Calibri      | Calibri Light |
+| Cambria      | Calibri       |
+| Trebuchet MS | Calibri       |
+| Impact       | Arial         |
+| Palatino     | Garamond      |
+| Consolas     | Calibri       |
 
-| Element | Size |
-|---------|------|
-| Slide title | 36-44pt bold |
-| Section header | 20-24pt bold |
-| Body text | 14-16pt |
-| Captions | 10-12pt muted |
+| Element        | Size          |
+| -------------- | ------------- |
+| Slide title    | 36-44pt bold  |
+| Section header | 20-24pt bold  |
+| Body text      | 14-16pt       |
+| Captions       | 10-12pt muted |
 
 ### Spacing
 

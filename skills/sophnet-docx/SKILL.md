@@ -16,6 +16,16 @@ cd "$SKILL_DIR"
 
 **NEVER run commands from the repository root or any other directory.** If you do, `uv run` won't find `pyproject.toml`, and `python` won't have access to required packages.
 
+## MANDATORY: Cleanup — Zero Residual Files
+
+**CRITICAL: After every task, `$SKILL_DIR` must contain ONLY these permanent files:** `SKILL.md`, `pyproject.toml`, `uv.lock`, `package.json`, `package-lock.json`, `node_modules/`, `scripts/`, `.venv/`. **NOTHING else.** No `.js` scripts, no `unpacked*/` directories, no `.py` scripts, no generated `.docx` files.
+
+Three enforced rules (non-negotiable):
+
+1. **JS scripts MUST self-delete.** Every `.js` file you create MUST include `try { fs.unlinkSync(__filename); } catch(e) {}` as the last line inside the final `.then()` or at script end. Additionally, run with: `cd "$SKILL_DIR" && node _tmp_docx.js; rm -f _tmp_docx.js`
+2. **Unpack to `/tmp/` only.** NEVER unpack into `$SKILL_DIR`. Use `/tmp/_tmp_docx_unpacked/` and `rm -rf` it after packing.
+3. **Python scripts go to `/tmp/`.** Write them to `/tmp/_tmp_*.py` and delete after execution.
+
 ## Overview
 
 A .docx file is a ZIP archive containing XML files.
@@ -91,8 +101,8 @@ cd "$SKILL_DIR" && uv run --project . python scripts/office/soffice.py --headles
 # Text extraction with tracked changes
 pandoc --track-changes=all document.docx -o output.md
 
-# Raw XML access
-uv run --project . python scripts/office/unpack.py document.docx unpacked/
+# Raw XML access (always unpack to /tmp/, never to $SKILL_DIR)
+uv run --project . python scripts/office/unpack.py document.docx /tmp/_tmp_docx_unpacked/
 ```
 
 ### Converting to Images (optional — requires LibreOffice)
@@ -120,9 +130,17 @@ Generate .docx files with JavaScript, then validate.
 
 **CRITICAL: Run all `node` commands from `$SKILL_DIR`.** The `docx` package must be installed in the skill's local `node_modules/`. If missing, run: `cd "$SKILL_DIR" && npm install docx`
 
+**CRITICAL: The JS script file MUST be named `_tmp_docx.js` (always this exact name) and MUST be deleted immediately after execution:**
+```bash
+cd "$SKILL_DIR" && node _tmp_docx.js; rm -f _tmp_docx.js
+```
+
 ### Setup
 
+**CRITICAL: Every `.js` script you write MUST include the self-cleanup line at the end** (`fs.unlinkSync(__filename)`). This ensures the temp script is always deleted, even if the shell-level `rm` is forgotten.
+
 ```javascript
+const fs = require("fs");
 const {
   Document,
   Packer,
@@ -157,7 +175,11 @@ const doc = new Document({
     },
   ],
 });
-Packer.toBuffer(doc).then((buffer) => fs.writeFileSync("doc.docx", buffer));
+Packer.toBuffer(doc).then((buffer) => {
+  fs.writeFileSync("/tmp/output.docx", buffer);
+  // MANDATORY: self-cleanup — delete this script file
+  try { fs.unlinkSync(__filename); } catch(e) {}
+});
 ```
 
 ### Validation
@@ -452,15 +474,17 @@ sections: [
 
 ### Step 1: Unpack
 
+**CRITICAL: Always unpack to `/tmp/`, never to `$SKILL_DIR`.** Use a unique temp directory name to avoid collisions.
+
 ```bash
-uv run --project . python scripts/office/unpack.py document.docx unpacked/
+uv run --project . python scripts/office/unpack.py document.docx /tmp/_tmp_docx_unpacked/
 ```
 
 Extracts XML, pretty-prints, merges adjacent runs, and converts smart quotes to XML entities (`&#x201C;` etc.) so they survive editing. Use `--merge-runs false` to skip run merging.
 
 ### Step 2: Edit XML
 
-Edit files in `unpacked/word/`. See XML Reference below for patterns.
+Edit files in `/tmp/_tmp_docx_unpacked/word/`. See XML Reference below for patterns.
 
 **Use "Claude" as the author** for tracked changes and comments, unless the user explicitly requests use of a different name.
 
@@ -483,9 +507,9 @@ Edit files in `unpacked/word/`. See XML Reference below for patterns.
 **Adding comments:** Use `comment.py` to handle boilerplate across multiple XML files (text must be pre-escaped XML):
 
 ```bash
-uv run --project . python scripts/comment.py unpacked/ 0 "Comment text with &amp; and &#x2019;"
-uv run --project . python scripts/comment.py unpacked/ 1 "Reply text" --parent 0  # reply to comment 0
-uv run --project . python scripts/comment.py unpacked/ 0 "Text" --author "Custom Author"  # custom author name
+uv run --project . python scripts/comment.py /tmp/_tmp_docx_unpacked/ 0 "Comment text with &amp; and &#x2019;"
+uv run --project . python scripts/comment.py /tmp/_tmp_docx_unpacked/ 1 "Reply text" --parent 0  # reply to comment 0
+uv run --project . python scripts/comment.py /tmp/_tmp_docx_unpacked/ 0 "Text" --author "Custom Author"  # custom author name
 ```
 
 Then add markers to document.xml (see Comments in XML Reference).
@@ -493,10 +517,13 @@ Then add markers to document.xml (see Comments in XML Reference).
 ### Step 3: Pack
 
 ```bash
-uv run --project . python scripts/office/pack.py unpacked/ output.docx --original document.docx
+uv run --project . python scripts/office/pack.py /tmp/_tmp_docx_unpacked/ output.docx --original document.docx
+rm -rf /tmp/_tmp_docx_unpacked/
 ```
 
 Validates with auto-repair, condenses XML, and creates DOCX. Use `--validate false` to skip.
+
+**CRITICAL: Always `rm -rf` the unpack directory after packing is complete.**
 
 **Auto-repair will fix:**
 
