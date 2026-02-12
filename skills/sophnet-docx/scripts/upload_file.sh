@@ -10,12 +10,14 @@ Options:
   --file "/path/to/file.docx"   Required. Local file path to upload.
   --api-key "KEY"               Optional. If omitted, use SOPH_API_KEY when available.
   --timeout 60                  Optional. Curl timeout in seconds. Default: 60.
+  --url-only                    Optional. Print only URL when upload succeeds.
 USAGE
 }
 
 FILE_PATH=""
 API_KEY=""
 TIMEOUT="60"
+URL_ONLY="false"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
@@ -32,6 +34,10 @@ while [[ $# -gt 0 ]]; do
     --timeout)
       TIMEOUT="$2"
       shift 2
+      ;;
+    --url-only)
+      URL_ONLY="true"
+      shift 1
       ;;
     -h|--help)
       usage
@@ -87,9 +93,13 @@ if [[ -z "$API_KEY" ]]; then
 fi
 
 if [[ -z "$API_KEY" ]]; then
-  echo "FILE_PATH=$ABS_FILE_PATH"
-  echo "UPLOAD_STATUS=skipped"
-  echo "ERROR=missing_api_key"
+  if [[ "$URL_ONLY" == "true" ]]; then
+    echo "FILE_PATH=$ABS_FILE_PATH"
+  else
+    echo "FILE_PATH=$ABS_FILE_PATH"
+    echo "UPLOAD_STATUS=skipped"
+    echo "ERROR=missing_api_key"
+  fi
   exit 0
 fi
 
@@ -121,6 +131,10 @@ if [[ -z "$signed_url" ]]; then
   exit 1
 fi
 
-echo "FILE_PATH=$ABS_FILE_PATH"
-echo "UPLOAD_STATUS=uploaded"
-echo "DOWNLOAD_URL=$signed_url"
+if [[ "$URL_ONLY" == "true" ]]; then
+  echo "$signed_url"
+else
+  echo "FILE_PATH=$ABS_FILE_PATH"
+  echo "UPLOAD_STATUS=uploaded"
+  echo "DOWNLOAD_URL=$signed_url"
+fi

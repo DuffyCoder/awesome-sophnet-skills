@@ -1,9 +1,22 @@
 ---
 name: sophnet-pptx
-description: 'Use this skill any time a .pptx file is involved in any way — as input, output, or both. This includes: creating slide decks, pitch decks, or presentations; reading, parsing, or extracting text from any .pptx file (even if the extracted content will be used elsewhere, like in an email or summary); editing, modifying, or updating existing presentations; combining or splitting slide files; working with templates, layouts, speaker notes, or comments. Trigger whenever the user mentions "deck," "slides," "presentation," or references a .pptx filename, regardless of what they plan to do with the content afterward. If a .pptx file needs to be opened, created, or touched, use this skill.'
+description: 'For create/edit tasks, final reply must include a download URL and must not include local file paths (brief summary text is allowed). Use this skill any time a .pptx file is involved in any way — as input, output, or both. This includes: creating slide decks, pitch decks, or presentations; reading, parsing, or extracting text from any .pptx file (even if the extracted content will be used elsewhere, like in an email or summary); editing, modifying, or updating existing presentations; combining or splitting slide files; working with templates, layouts, speaker notes, or comments. Trigger whenever the user mentions "deck," "slides," "presentation," or references a .pptx filename, regardless of what they plan to do with the content afterward. If a .pptx file needs to be opened, created, or touched, use this skill.'
 ---
 
 # PPTX Skill
+
+## TOP PRIORITY: URL Required, No Local Paths (Create/Edit)
+
+**This rule overrides all formatting and style preferences.**
+
+If the task creates or edits a `.pptx`, the final assistant reply MUST include:
+
+- Success: `https://...`
+- Upload skipped: `FILE_PATH=<absolute-path>`
+
+Forbidden in create/edit replies: local file paths (e.g. `/tmp/...pptx`). Brief summary text is allowed.
+
+Before sending the final answer, self-check: "Does my reply include URL and avoid local paths?"
 
 ## MANDATORY: Working Directory
 
@@ -35,7 +48,7 @@ Three enforced rules (non-negotiable):
 | Read/analyze content         | `cd $SKILL_DIR && uv run --project . python -m markitdown presentation.pptx` |
 | Edit or create from template | Read [editing.md](editing.md)                               |
 | Create from scratch          | Read [pptxgenjs.md](pptxgenjs.md)                           |
-| Optional upload for URL      | `cd $SKILL_DIR && bash scripts/upload_file.sh --file /abs/path/output.pptx` |
+| Upload and print URL         | `cd $SKILL_DIR && bash scripts/upload_file.sh --file /abs/path/output.pptx --url-only` |
 
 ## Python Runtime (uv)
 
@@ -65,38 +78,49 @@ cd "$SKILL_DIR" && uv run --project . python -c "from pptx import Presentation; 
 **CRITICAL: All Node.js execution for creating presentations from scratch MUST run from this skill directory.** The `pptxgenjs`, `react-icons`, `sharp` etc. packages are installed in this skill's local `node_modules/`. Running `node` from any other directory will fail with `Cannot find module`.
 
 ```bash
-# CORRECT — always use _tmp_pptx.js, script self-deletes, shell rm as backup
-cd "$SKILL_DIR" && node _tmp_pptx.js; rm -f _tmp_pptx.js
+# CORRECT — run script, clean up, then ALWAYS upload the output file
+cd "$SKILL_DIR" && node _tmp_pptx.js; rm -f _tmp_pptx.js; bash scripts/upload_file.sh --file /tmp/OUTPUT_NAME.pptx --url-only
 
 # WRONG — running from repo root or other directory
 node create_presentation.js              # ✗ Cannot find module
 node /some/other/path/create_ppt.js      # ✗ Cannot find module 'pptxgenjs'
+
+# WRONG — forgetting to upload after creating the file
+cd "$SKILL_DIR" && node _tmp_pptx.js; rm -f _tmp_pptx.js   # ✗ Missing upload step!
 ```
 
-Always save the script as `$SKILL_DIR/_tmp_pptx.js`. The script MUST include `try { require("fs").unlinkSync(__filename); } catch(e) {}` as its last statement to self-delete. The shell `rm -f` is a backup.
+Always save the script as `$SKILL_DIR/_tmp_pptx.js`. The script MUST include `try { require("fs").unlinkSync(__filename); } catch(e) {}` as its last statement to self-delete. The shell `rm -f` is a backup. **The `bash scripts/upload_file.sh --url-only` at the end is MANDATORY** — replace `OUTPUT_NAME.pptx` with the actual filename.
+
+## MANDATORY: Upload After Every Create/Edit
+
+**CRITICAL: After creating or modifying a PPTX file, you MUST run `scripts/upload_file.sh --url-only` and include the URL in the final reply.** This is NOT optional. Do NOT return local file paths. You may include brief summary text, but the reply must contain the download URL.
 
 ## Delivery
 
 Local PPTX creation/editing does not require any Sophnet API key.
 
-Upload is optional and only needed when a download URL is explicitly requested.
+**IMPORTANT: After creating or modifying a PPTX, ALWAYS upload it and return the download URL.** This is the default behavior — do not skip the upload step.
 
 ```bash
-bash scripts/upload_file.sh --file <absolute-path-to-pptx>
+cd "$SKILL_DIR" && bash scripts/upload_file.sh --file <absolute-path-to-pptx> --url-only
 ```
+
+**Note:** The `cd "$SKILL_DIR"` prefix is MANDATORY — `scripts/upload_file.sh` is relative to the skill directory. Without it, the command fails with `No such file or directory`.
 
 Upload command output contract:
 
 - `FILE_PATH=<absolute-path>`
 - `UPLOAD_STATUS=uploaded|skipped`
 - `DOWNLOAD_URL=<https://...>` (present only when uploaded)
+- With `--url-only` and successful upload: output is exactly one line, the raw `https://...` URL
 
 Delivery rules:
 
-- Use local file delivery by default; do not require API key.
-- Call `scripts/upload_file.sh` only when URL output is needed.
-- If `UPLOAD_STATUS=uploaded`, return the exact `DOWNLOAD_URL` value.
-- If `UPLOAD_STATUS=skipped` (missing API key), return `FILE_PATH` instead of failing the whole task.
+- **ALWAYS `cd "$SKILL_DIR"` first, then call `bash scripts/upload_file.sh --url-only` after producing a PPTX file.**
+- Final response for create/edit MUST include:
+  - success: a valid `https://...` URL
+  - missing API key fallback: `FILE_PATH=<absolute-path>`
+- Do not include local file paths in create/edit responses.
 - Keep URL output logic independent inside `sophnet-pptx/scripts`. Do not call other skills' upload scripts.
 
 ---
@@ -138,21 +162,17 @@ Use when no template or reference presentation is available. **You MUST follow t
    - Color: `"FF0000"` (6-char hex, no `#` prefix)
    - Background: `slide.background = { color: "HEXVAL" }` (use `color` key, not `path`)
    - Save with: `pres.writeFile({ fileName: "/tmp/output.pptx" })`
-   - **MANDATORY last line**: `try { require("fs").unlinkSync(__filename); } catch(e) {}` — the script deletes itself
+   - **MANDATORY: copy the upload block from pptxgenjs.md** — every script MUST include `require("child_process").execSync` to call `scripts/upload_file.sh --url-only` inside the `writeFile().then()` callback, right after `fs.unlinkSync(__filename)`. This ensures the file is uploaded automatically and URL output is available for the final reply. See the "Setup & Basic Structure" section in [pptxgenjs.md](pptxgenjs.md) for the exact template.
 
-3. **Run from `$SKILL_DIR` with shell-level cleanup as backup**:
+3. **Run from `$SKILL_DIR`**:
    ```bash
    cd "$SKILL_DIR" && node _tmp_pptx.js; rm -f _tmp_pptx.js
    ```
+   The script self-deletes, uploads the file, and prints the URL. Return a final reply that includes this URL and avoids local paths.
 
 4. **Verify** — check the output file exists, then use markitdown for content QA:
    ```bash
    cd "$SKILL_DIR" && uv run --project . python -m markitdown /tmp/output.pptx
-   ```
-
-5. **Upload (if URL requested)**:
-   ```bash
-   cd "$SKILL_DIR" && bash scripts/upload_file.sh --file /tmp/output.pptx
    ```
 
 ### What NOT to do
@@ -162,6 +182,7 @@ Use when no template or reference presentation is available. **You MUST follow t
 - Do NOT guess the pptxgenjs API — always refer to [pptxgenjs.md](pptxgenjs.md)
 - Do NOT use string shape names like `'rect'` — use `pres.shapes.RECTANGLE`
 - Do NOT skip reading [pptxgenjs.md](pptxgenjs.md) before coding
+- Do NOT skip the upload step — ALWAYS run `scripts/upload_file.sh --url-only` after creating/modifying a file and include the URL in the final reply
 
 ---
 

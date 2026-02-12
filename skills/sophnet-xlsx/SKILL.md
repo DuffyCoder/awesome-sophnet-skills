@@ -28,11 +28,15 @@ Two enforced rules (non-negotiable):
    ```
 2. **NEVER create any file inside `$SKILL_DIR`.** All output files go to the user-specified path or `/tmp/`.
 
+## MANDATORY: Upload After Every Create/Edit
+
+**CRITICAL: After creating or modifying an XLSX file, you MUST run `scripts/upload_file.sh --url-only` and include the URL in the final reply.** This is NOT optional. Do NOT return local file paths. You may include brief summary text, but the reply must contain the download URL.
+
 ## Delivery
 
 Local spreadsheet creation/editing does not require any Sophnet API key.
 
-Upload is optional and only needed when a download URL is explicitly requested.
+**IMPORTANT: After creating or modifying an XLSX, ALWAYS upload it and return the download URL.** This is the default behavior — do not skip the upload step.
 
 **CRITICAL: All Python execution in this skill MUST use `uv run --project .` from the skill directory. NEVER use bare `python3`, `python`, or `pip install` directly — the required packages (openpyxl, lxml, etc.) are ONLY available inside the uv virtual environment defined by this skill's `pyproject.toml`. Direct `python3` will fail with ModuleNotFoundError.**
 
@@ -56,21 +60,25 @@ cd "$SKILL_DIR" && uv run --project . python -c "import openpyxl; ..."
 ```
 
 ```bash
-bash scripts/upload_file.sh --file <absolute-path-to-xlsx>
+cd "$SKILL_DIR" && bash scripts/upload_file.sh --file <absolute-path-to-xlsx> --url-only
 ```
+
+**Note:** The `cd "$SKILL_DIR"` prefix is MANDATORY — `scripts/upload_file.sh` is relative to the skill directory. Without it, the command fails with `No such file or directory`.
 
 Upload command output contract:
 
 - `FILE_PATH=<absolute-path>`
 - `UPLOAD_STATUS=uploaded|skipped`
 - `DOWNLOAD_URL=<https://...>` (present only when uploaded)
+- With `--url-only` and successful upload: output is exactly one line, the raw `https://...` URL
 
 Delivery rules:
 
-- Use local file delivery by default; do not require API key.
-- Call `scripts/upload_file.sh` only when URL output is needed.
-- If `UPLOAD_STATUS=uploaded`, return the exact `DOWNLOAD_URL` value.
-- If `UPLOAD_STATUS=skipped` (missing API key), return `FILE_PATH` instead of failing the whole task.
+- **ALWAYS `cd "$SKILL_DIR"` first, then call `bash scripts/upload_file.sh --url-only` after producing an XLSX file.**
+- Final response for create/edit MUST include:
+  - success: a valid `https://...` URL
+  - missing API key fallback: `FILE_PATH=<absolute-path>`
+- Do not include local file paths in create/edit responses.
 - Keep URL output logic independent inside `sophnet-xlsx/scripts`. Do not call other skills' upload scripts.
 
 ## All Excel files
@@ -227,10 +235,11 @@ This applies to ALL calculations - totals, percentages, ratios, differences, etc
      - `#DIV/0!`: Division by zero
      - `#VALUE!`: Wrong data type in formula
      - `#NAME?`: Unrecognized formula name
-7. **Optional upload for URL output**:
-   - Run `bash scripts/upload_file.sh --file <absolute-path-to-xlsx>`
-   - If `UPLOAD_STATUS=uploaded`, return the exact `DOWNLOAD_URL`
-   - If `UPLOAD_STATUS=skipped`, return `FILE_PATH`
+7. **Upload and deliver URL** (ALWAYS do this):
+   - Run `cd "$SKILL_DIR" && bash scripts/upload_file.sh --file <absolute-path-to-xlsx> --url-only`
+   - Final response must include URL:
+     - success: include a raw `https://...` URL
+     - fallback: `FILE_PATH=<absolute-path>`
 
 ### Creating new Excel files
 

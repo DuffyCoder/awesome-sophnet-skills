@@ -11,6 +11,24 @@ DEFAULT_SKILLS_PATH = "skills"
 DEFAULT_REF = "main"
 
 
+def resolve_workspace_dir() -> str:
+    """Return the user workspace directory.
+
+    Priority:
+    1. $OPENCLAW_WORKSPACE (explicit override)
+    2. ~/.openclaw/workspace (default)
+    """
+    explicit = os.environ.get("OPENCLAW_WORKSPACE", "").strip()
+    if explicit:
+        return os.path.expanduser(explicit)
+    return os.path.expanduser("~/.openclaw/workspace")
+
+
+def resolve_skills_dir() -> str:
+    """Return <workspace>/skills – the directory where skills are installed."""
+    return os.path.join(resolve_workspace_dir(), "skills")
+
+
 def github_request(url: str, user_agent: str) -> bytes:
     headers = {"User-Agent": user_agent}
     token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")

@@ -53,28 +53,36 @@ This applies to both the provided scripts AND any inline Python code you write. 
 cd "$SKILL_DIR" && uv run --project . python -c "import docx; ..."
 ```
 
+## MANDATORY: Upload After Every Create/Edit
+
+**CRITICAL: After creating or modifying a DOCX file, you MUST run `scripts/upload_file.sh --url-only` and include the URL in the final reply.** This is NOT optional. Do NOT return local file paths. You may include brief summary text, but the reply must contain the download URL.
+
 ## Delivery
 
 Local DOCX creation/editing does not require any Sophnet API key.
 
-Upload is optional and only needed when a download URL is explicitly requested.
+**IMPORTANT: After creating or modifying a DOCX, ALWAYS upload it and return the download URL.** This is the default behavior — do not skip the upload step.
 
 ```bash
-bash scripts/upload_file.sh --file <absolute-path-to-docx>
+cd "$SKILL_DIR" && bash scripts/upload_file.sh --file <absolute-path-to-docx> --url-only
 ```
+
+**Note:** The `cd "$SKILL_DIR"` prefix is MANDATORY — `scripts/upload_file.sh` is relative to the skill directory. Without it, the command fails with `No such file or directory`.
 
 Upload command output contract:
 
 - `FILE_PATH=<absolute-path>`
 - `UPLOAD_STATUS=uploaded|skipped`
 - `DOWNLOAD_URL=<https://...>` (present only when uploaded)
+- With `--url-only` and successful upload: output is exactly one line, the raw `https://...` URL
 
 Delivery rules:
 
-- Use local file delivery by default; do not require API key.
-- Call `scripts/upload_file.sh` only when URL output is needed.
-- If `UPLOAD_STATUS=uploaded`, return the exact `DOWNLOAD_URL` value.
-- If `UPLOAD_STATUS=skipped` (missing API key), return `FILE_PATH` instead of failing the whole task.
+- **ALWAYS `cd "$SKILL_DIR"` first, then call `bash scripts/upload_file.sh --url-only` after producing a DOCX file.**
+- Final response for create/edit MUST include:
+  - success: a valid `https://...` URL
+  - missing API key fallback: `FILE_PATH=<absolute-path>`
+- Do not include local file paths in create/edit responses.
 - Keep URL output logic independent inside `sophnet-docx/scripts`. Do not call other skills' upload scripts.
 
 ## Quick Reference
@@ -85,7 +93,7 @@ Delivery rules:
 | Read/analyze content       | `pandoc` or unpack for raw XML                                    |
 | Create new document        | Use `docx-js` - see Creating New Documents below                  |
 | Edit existing document     | Unpack → edit XML → repack - see Editing Existing Documents below |
-| Optional upload for URL    | `bash scripts/upload_file.sh --file /abs/path/output.docx`        |
+| Upload and print URL only  | `cd $SKILL_DIR && bash scripts/upload_file.sh --file /abs/path/output.docx --url-only` |
 
 ### Converting .doc to .docx (requires LibreOffice)
 

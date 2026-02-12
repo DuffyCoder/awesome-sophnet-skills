@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# sophnet-sophon-key configuration script
-# Resolve Sophon API Key from Moltbot config or guide env setup
+# sophon-key 配置脚本
+# 从 Moltbot 配置文件获取 Sophon API Key 或提示用户设置环境变量
 #
 
 set -e
@@ -20,7 +20,7 @@ if [[ -z "$MOLTBOT_CONFIG" ]]; then
 fi
 SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Colored output
+# 颜色输出
 green='\033[0;32m'
 yellow='\033[1;33m'
 red='\033[0;31m'
@@ -43,14 +43,14 @@ log_error() {
     echo -e "${red}✗${nc} $1"
 }
 
-# Get Sophon API Key from config
+# 从配置文件获取 Sophon API Key
 get_api_key_from_config() {
     if [[ ! -f "$MOLTBOT_CONFIG" ]]; then
-        log_warning "Moltbot config file does not exist: $MOLTBOT_CONFIG"
+        log_warning "Moltbot 配置文件不存在: $MOLTBOT_CONFIG"
         return 1
     fi
 
-    # Try parsing config with jq
+    # 尝试使用 jq 解析配置文件
     if command -v jq &>/dev/null; then
         local api_key
         api_key=$(jq -r '.models.providers.sophnet.apiKey // empty' "$MOLTBOT_CONFIG" 2>/dev/null || true)
@@ -61,10 +61,10 @@ get_api_key_from_config() {
         fi
     fi
 
-    # Fallback: extract with grep + sed
+    # 回退到 grep + sed 提取
     if command -v grep &>/dev/null && command -v sed &>/dev/null; then
         local api_key
-        # Match "apiKey": "value" format (allowing spaces)
+        # 尝试匹配 "apiKey": "value" 格式（允许空格）
         api_key=$(grep '"apiKey"' "$MOLTBOT_CONFIG" | sed 's/.*"apiKey"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/' | head -1 || true)
 
         if [[ -n "$api_key" ]]; then
@@ -76,39 +76,39 @@ get_api_key_from_config() {
     return 1
 }
 
-# Check whether env var is already set
+# 检查环境变量是否已设置
 check_env_var() {
     if [[ -n "$SOPH_API_KEY" ]]; then
-        # Env var is already set; return silently
+        # 环境变量已设置，静默返回
         return 0
     fi
     return 1
 }
 
-# Show configuration help
+# 显示配置说明
 show_config_help() {
     cat << EOF
 
-${blue}Sophon API Key Configuration${nc}
+${blue}Sophon API Key 配置${nc}
 
-${yellow}Method 1: Set environment variable manually${nc}
+${yellow}方法 1: 手动设置环境变量${nc}
     export SOPH_API_KEY="your-api-key-here"
 
-${yellow}Method 2: Add to shell profile (recommended)${nc}
+${yellow}方法 2: 添加到 shell 配置文件（推荐）${nc}
     echo 'export SOPH_API_KEY="your-api-key-here"' >> ~/.bashrc   # Bash
     echo 'export SOPH_API_KEY="your-api-key-here"' >> ~/.zshrc    # Zsh
-    source ~/.bashrc   # Reload configuration
+    source ~/.bashrc   # 重新加载配置
 
-${yellow}Method 3: Use this script for automatic setup${nc}
+${yellow}方法 3: 使用此脚本自动配置${nc}
     $SKILL_DIR/setup-key.sh
 
-${yellow}Method 4: Resolve automatically from Moltbot config${nc}
-    This script will read API key from config automatically
+${yellow}方法 4: 从 Moltbot 配置文件自动获取${nc}
+    脚本会自动从配置文件读取 API Key
 
 EOF
 }
 
-# Parse command-line arguments
+# 解析命令行参数
 OUTPUT_ONLY=false
 QUIET=false
 
@@ -133,20 +133,20 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Main function
+# 主函数
 main() {
-    # Check env var first (silent)
+    # 首先检查环境变量（静默）
     if check_env_var; then
-        # Env var is already set
+        # 环境变量已设置
         if [[ "$OUTPUT_ONLY" == true ]]; then
             echo "$SOPH_API_KEY"
         fi
         return 0
     fi
 
-    # Try resolving from config
+    # 尝试从配置文件获取
     if [[ "$QUIET" != true ]]; then
-        log_info "SOPH_API_KEY is not set, trying to resolve from config..."
+        log_info "未找到 SOPH_API_KEY 环境变量，尝试从配置文件获取..."
     fi
 
     local api_key
@@ -154,39 +154,39 @@ main() {
 
     if [[ -n "$api_key" ]]; then
         if [[ "$QUIET" != true ]]; then
-            log_success "Found Sophon API Key in config"
-            echo -n "  Value: "
+            log_success "从配置文件找到 Sophon API Key"
+            echo -n "  值: "
             echo "${api_key:0:10}...${api_key: -5}"
             echo ""
         fi
 
-        # Output-only mode: print API key
+        # 如果是只输出模式，打印 API KEY
         if [[ "$OUTPUT_ONLY" == true ]]; then
             echo "$api_key"
             return 0
         fi
 
-        # Export env var
+        # 导出环境变量
         export SOPH_API_KEY="$api_key"
         if [[ "$QUIET" != true ]]; then
-            log_success "Set SOPH_API_KEY environment variable"
-            log_info "Tip: add this line to your shell profile (~/.bashrc or ~/.zshrc):"
+            log_success "已设置 SOPH_API_KEY 环境变量"
+            log_info "建议: 将以下内容添加到您的 shell 配置文件 (~/.bashrc 或 ~/.zshrc):"
             echo "  export SOPH_API_KEY=\"$api_key\""
             echo ""
         fi
         return 0
     fi
 
-    # Output-only mode: return error only
+    # 如果是只输出模式且静默，只返回错误
     if [[ "$OUTPUT_ONLY" == true ]]; then
         return 1
     fi
 
-    # Not found in any source
-    log_error "Sophon API Key configuration not found"
+    # 未找到配置
+    log_error "未找到 Sophon API Key 配置"
     show_config_help
     return 1
 }
 
-# Run main
+# 运行主函数
 main "$@"

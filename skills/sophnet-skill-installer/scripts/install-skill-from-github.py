@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install a skill from a GitHub repo path into $SOPHNET_HOME/skills."""
+"""Install a skill from a GitHub repo path into the workspace skills directory."""
 
 from __future__ import annotations
 
@@ -18,6 +18,7 @@ from github_utils import (
     DEFAULT_REF,
     DEFAULT_REPO,
     github_request,
+    resolve_skills_dir,
 )
 
 
@@ -44,10 +45,6 @@ class Source:
 
 class InstallError(Exception):
     pass
-
-
-def _sophnet_home() -> str:
-    return os.environ.get("SOPHNET_HOME", os.path.expanduser("~/.sophnet"))
 
 
 def _tmp_root() -> str:
@@ -255,7 +252,7 @@ def _resolve_source(args: Args) -> Source:
 
 
 def _default_dest() -> str:
-    return os.path.join(_sophnet_home(), "skills")
+    return resolve_skills_dir()
 
 
 def _parse_args(argv: list[str]) -> Args:

@@ -18,6 +18,7 @@ from github_utils import (
     DEFAULT_SKILLS_PATH,
     github_api_contents_url,
     github_request,
+    resolve_skills_dir,
 )
 
 DEFAULT_PATH = DEFAULT_SKILLS_PATH
@@ -54,12 +55,8 @@ def _request(url: str) -> bytes:
     return github_request(url, "sophnet-skill-list")
 
 
-def _sophnet_home() -> str:
-    return os.environ.get("SOPHNET_HOME", os.path.expanduser("~/.sophnet"))
-
-
 def _skills_root() -> str:
-    return os.path.join(_sophnet_home(), "skills")
+    return resolve_skills_dir()
 
 
 def _installed(skill_name: str) -> bool:

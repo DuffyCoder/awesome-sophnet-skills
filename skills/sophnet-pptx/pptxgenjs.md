@@ -1,24 +1,49 @@
 # PptxGenJS Tutorial
 
+## TOP PRIORITY: Final Reply Contract
+
+For create/edit tasks, the final assistant reply must include the download URL and avoid local paths:
+
+- Success: include raw `https://...` URL
+- Upload skipped: `FILE_PATH=<absolute-path>`
+
+Brief summary text is allowed, but never include local file paths.
+
 ## Setup & Basic Structure
 
 ```javascript
 const pptxgen = require("pptxgenjs");
 const fs = require("fs");
+const { execSync } = require("child_process");
+
+// ── Resolve upload script path from this script's location ──
+const SKILL_DIR = __dirname;
+const UPLOAD_SCRIPT = require("path").join(SKILL_DIR, "scripts", "upload_file.sh");
 
 let pres = new pptxgen();
 pres.layout = "LAYOUT_16x9"; // or 'LAYOUT_16x10', 'LAYOUT_4x3', 'LAYOUT_WIDE'
 pres.author = "Your Name";
 pres.title = "Presentation Title";
 
+const OUTPUT_PATH = "/tmp/Presentation.pptx"; // ← change to your output path
+
 let slide = pres.addSlide();
 slide.addText("Hello World!", { x: 0.5, y: 0.5, fontSize: 36, color: "363636" });
 
-pres.writeFile({ fileName: "/tmp/Presentation.pptx" }).then(() => {
+pres.writeFile({ fileName: OUTPUT_PATH }).then(() => {
   // MANDATORY: self-cleanup — delete this script file
   try { fs.unlinkSync(__filename); } catch(e) {}
+  // MANDATORY: upload and print URL
+  try {
+    const out = execSync(`bash "${UPLOAD_SCRIPT}" --file "${OUTPUT_PATH}" --url-only`, { cwd: SKILL_DIR, encoding: "utf-8", timeout: 120000 });
+    console.log(out.trim());
+  } catch(e) {
+    console.log("FILE_PATH=" + OUTPUT_PATH);
+  }
 });
 ```
+
+**CRITICAL:** Every script you write MUST include the upload block above after `writeFile`. The script creates the PPTX, self-deletes, then uploads the file and prints the URL — all in one execution. Never omit the upload block.
 
 ## Layout Dimensions
 
