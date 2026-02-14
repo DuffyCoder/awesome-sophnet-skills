@@ -42,7 +42,7 @@ class FeishuBitableAPI {
         const originalRequest = error.config;
         
         // 如果是token过期错误且未重试过
-        if (error.response && error.response.status === 99991663 && !originalRequest._retry && this.autoRefreshToken) {
+        if (error.response && error.response.data && error.response.data.code === 99991663 && !originalRequest._retry && this.autoRefreshToken) {
           originalRequest._retry = true;
           
           try {

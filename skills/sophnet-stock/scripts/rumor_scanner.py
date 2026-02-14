@@ -13,6 +13,7 @@ Usage: python3 rumor_scanner.py
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 import re
@@ -25,8 +26,8 @@ import gzip
 CACHE_DIR = Path(__file__).parent.parent / "cache"
 CACHE_DIR.mkdir(exist_ok=True)
 
-# Bird CLI path
-BIRD_CLI = "/home/clawdbot/.nvm/versions/node/v24.12.0/bin/bird"
+# Bird CLI path - resolve from PATH or environment variable
+BIRD_CLI = os.environ.get("BIRD_CLI_PATH") or shutil.which("bird") or "bird"
 BIRD_ENV = Path(__file__).parent.parent / ".env"
 
 def load_env():
@@ -86,7 +87,7 @@ def search_twitter_rumors():
                     for tweet in tweets:
                         text = tweet.get('text', '')
                         # Filter for actual rumors/signals
-                        if any(kw in text.lower() for kw in ['hearing', 'rumor', 'source', 'insider', 'upgrade', 'downgrade', 'breaking', 'M&A', 'merger', 'acquisition']):
+                        if any(kw in text.lower() for kw in ['hearing', 'rumor', 'source', 'insider', 'upgrade', 'downgrade', 'breaking', 'm&a', 'merger', 'acquisition']):
                             results.append({
                                 'source': 'twitter',
                                 'type': 'rumor',
@@ -97,9 +98,14 @@ def search_twitter_rumors():
                                 'query': query
                             })
                 except json.JSONDecodeError:
-                    pass
+                    print(f"    ⚠ Failed to parse JSON for query: {query}", file=sys.stderr)
+        except FileNotFoundError:
+            print(f"    ⚠ Bird CLI not found at: {BIRD_CLI}", file=sys.stderr)
+            break  # No point trying other queries if binary is missing
+        except subprocess.TimeoutExpired:
+            print(f"    ⚠ Bird CLI timed out for query: {query}", file=sys.stderr)
         except Exception as e:
-            pass
+            print(f"    ⚠ Twitter rumor search failed for '{query}': {e}", file=sys.stderr)
     
     # Dedupe by text similarity
     seen = set()
@@ -150,9 +156,14 @@ def search_twitter_buzz():
                                 'engagement': tweet.get('likes', 0) + tweet.get('retweets', 0) * 2
                             })
                 except json.JSONDecodeError:
-                    pass
+                    print(f"    ⚠ Failed to parse JSON for query: {query}", file=sys.stderr)
+        except FileNotFoundError:
+            print(f"    ⚠ Bird CLI not found at: {BIRD_CLI}", file=sys.stderr)
+            break
+        except subprocess.TimeoutExpired:
+            print(f"    ⚠ Bird CLI timed out for query: {query}", file=sys.stderr)
         except Exception as e:
-            pass
+            print(f"    ⚠ Twitter buzz search failed for '{query}': {e}", file=sys.stderr)
     
     # Sort by engagement
     results.sort(key=lambda x: x.get('engagement', 0), reverse=True)

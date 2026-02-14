@@ -12,9 +12,10 @@ description: Generate a daily, high-signal Markdown news report by scraping a pr
    - Default to local today.
 2. Read `sources.json` and `cache.json` **with explicit paths**.
    - Always call the read tool with a `path` field (not `file_path`).
-   - Use these exact paths:
-     - `read(path="/Data/shutong.shan/clawd/skills/sophnet-dailynews/sources.json")`
-     - `read(path="/Data/shutong.shan/clawd/skills/sophnet-dailynews/cache.json")`
+   - Resolve paths relative to this skill's directory (the folder containing this SKILL.md):
+     - `read(path="<skill_dir>/sources.json")`
+     - `read(path="<skill_dir>/cache.json")`
+   - Where `<skill_dir>` is the absolute path to `skills/sophnet-dailynews/` in the current workspace.
 3. Collect items in waves (Tier 1 → Tier 2 → Tier 3/browser) until the report has enough **high-quality** items.
 4. Write `NewsReport/YYYY-MM-DD-news-report.md`.
 5. Update `cache.json` (dedupe + historical stats).
