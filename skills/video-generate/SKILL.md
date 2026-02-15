@@ -1,6 +1,6 @@
 ---
 name: video-generate
-description: 'Generate videos using SophNet Video Generation API. Supports text-to-video, image-to-video (first frame), and image-to-video (first + last frame). Default model:Wan2.6-I2V with 720p (1280*720) resolution and 5s duration. Polls for completion with 5-minute timeout. Use when user asks to generate videos, create videos from text or images.'
+description: 'Generate videos using SophNet Video Generation API. Supports text-to-video, image-to-video (first frame), and image-to-video (first + last frame). Auto-selects model: Wan2.6-I2V when images provided, otherwise Wan2.6-T2V. Default resolution: 720p (1280*720) and 5s duration. Polls for completion with 5-minute timeout. Use when user asks to generate videos, create videos from text or images.'
 ---
 
 # SophNet Video Generation
@@ -201,7 +201,9 @@ cd "{baseDir}" && uv run --no-build-isolation python scripts/generate_video.py \
 
 If user doesn't specify:
 
-- **Model**: Uses `Wan2.6-I2V`
+- **Model**: Auto-selects based on input
+  - `Wan2.6-I2V` if any image is provided (`--first-frame`)
+  - `Wan2.6-T2V` for text-only prompts
 - **Resolution**: Uses `1280*720` (720P)
 - **Duration**: Uses `5` seconds
 - **Parameters**: Uses each model's default parameters
@@ -216,7 +218,11 @@ If user doesn't specify:
 ## 注意事项
 
 - **API Key**：已内置在二进制文件中，无需配置 SOPH_API_KEY 环境变量
-- **默认模型**：Wan2.6-I2V，分辨率 1280\*720 (720P)，时长 5 秒
+- **默认模型**：自动选择模型
+  - 如果提供图片（`--first-frame`）：使用 `Wan2.6-I2V`
+  - 如果只有文本提示词：使用 `Wan2.6-T2V`
+- **默认分辨率**：1280*720 (720P)
+- **默认时长**：5 秒
 - **超时时间**：5分钟 (300秒)
 - **轮询间隔**：5秒
 - **异步任务**：视频生成是异步的，需要轮询查询状态
