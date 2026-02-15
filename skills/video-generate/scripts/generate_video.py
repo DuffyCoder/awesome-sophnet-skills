@@ -26,7 +26,8 @@ TIMEOUT = 300  # 5 minutes in seconds
 POLL_INTERVAL = 5  # 5 seconds
 
 # Default values
-DEFAULT_MODEL = "Wan2.6-I2V"
+DEFAULT_MODEL_IMAGE = "Wan2.6-I2V"  # For image-to-video
+DEFAULT_MODEL_TEXT = "Wan2.6-T2V"   # For text-to-video
 DEFAULT_SIZE = "1280*720"
 DEFAULT_DURATION = 5
 
@@ -220,7 +221,7 @@ def main():
     )
     parser.add_argument("--prompt", help="Text prompt (required for text-to-video)")
     parser.add_argument("--negative-prompt", help="Negative prompt")
-    parser.add_argument("--model", default=DEFAULT_MODEL, help=f"Model name (default: {DEFAULT_MODEL})")
+    parser.add_argument("--model", help="Model name. Defaults to Wan2.6-I2V if image provided, otherwise Wan2.6-T2V")
     parser.add_argument("--size", default=DEFAULT_SIZE, help=f"Resolution (default: {DEFAULT_SIZE})")
     parser.add_argument("--duration", type=int, default=DEFAULT_DURATION, help=f"Video duration in seconds (default: {DEFAULT_DURATION})")
     parser.add_argument("--first-frame", help="First frame image URL")
@@ -237,6 +238,16 @@ def main():
     if not args.prompt and not args.first_frame:
         print("Error: Either --prompt or --first-frame is required", file=sys.stderr)
         sys.exit(1)
+
+    # Auto-select model based on image input if not specified
+    if args.model:
+        model = args.model
+    else:
+        # If any image input is provided, use Wan2.6-I2V, otherwise use Wan2.6-T2V
+        if args.first_frame or args.last_frame:
+            model = DEFAULT_MODEL_IMAGE
+        else:
+            model = DEFAULT_MODEL_TEXT
 
     # Get API key
     api_key = args.api_key or get_api_key()
@@ -257,7 +268,7 @@ def main():
 
     # Build request
     request_body = create_request(
-        model=args.model,
+        model=model,
         prompt=args.prompt,
         negative_prompt=args.negative_prompt,
         first_frame_url=first_frame_url,
@@ -270,7 +281,7 @@ def main():
 
     # Print request info
     print("Creating video generation task...")
-    print(f"Model: {args.model}")
+    print(f"Model: {model}")
     print(f"Resolution: {args.size}")
     duration_str = f"{args.duration}s" if args.duration > 0 else "auto (-1)"
     print(f"Duration: {duration_str}")
@@ -389,7 +400,7 @@ def main():
         print(f"LOCAL_PATH={local_path}")
     print()
     print("Generation Parameters:")
-    print(f"  Model: {args.model}")
+    print(f"  Model: {model}")
     print(f"  Resolution: {resolution}")
     print(f"  Duration: {video_duration}s")
     print(f"  FPS: {fps}")
