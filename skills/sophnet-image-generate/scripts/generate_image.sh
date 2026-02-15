@@ -172,7 +172,7 @@ fi
 
 if [[ -z "${API_KEY:-}" ]]; then
   echo "Error: No API key provided." >&2
-  echo "Please set SOPH_API_KEY environment variable or configure via sophnet-sophon-key skill." >&2
+  echo "Please set SOPH_API_KEY environment variable or configure via sophnet-key skill." >&2
   exit 1
 fi
 

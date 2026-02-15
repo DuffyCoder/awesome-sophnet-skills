@@ -1,14 +1,14 @@
 ---
 name: sophnet-face-search
-description: Face detection and similarity search using Sophnet API. Use when the user needs to find similar faces across multiple images, detect faces in photos, or compare face embeddings. Supports two-step workflow - extract query face embedding, then search for similar faces in a collection of images.
+description: Face detection and similarity search using SophNet API. Use when the user needs to find similar faces across multiple images, detect faces in photos, or compare face embeddings. Supports two-step workflow - extract query face embedding, then search for similar faces in a collection of images.
 ---
-# Sophon Face Search
+# SophNet Face Search
 
 Search for similar faces across multiple images using face detection and embedding comparison.
 
 ## Overview
 
-This skill provides face detection and similarity search capabilities using the Sophnet face detection API. It supports a two-step workflow:
+This skill provides face detection and similarity search capabilities using the SophNet face detection API. It supports a two-step workflow:
 
 1. **Extract query face**: Detect the largest face in a query image and extract its embedding
 2. **Search similar faces**: Find similar faces in a collection of images by comparing embeddings
@@ -16,7 +16,7 @@ This skill provides face detection and similarity search capabilities using the 
 ## Prerequisites
 
 The skill uses `uv` for Python environment management and requires:
-- Sophnet API key (obtained via the `sophnet-sophon-key` skill)
+- SophNet API key (obtained via the `sophnet-key` skill)
 - Python 3.8+
 - opencv-python-headless, numpy, requests
 
@@ -79,9 +79,9 @@ uv run --with opencv-python-headless --with numpy --with requests \
 
 ## API Key Management
 
-Before running face search, obtain the Sophnet API key:
+Before running face search, obtain the SophNet API key:
 
-1. Use the `sophnet-sophon-key` skill to retrieve the API key
+1. Use the `sophnet-key` skill to retrieve the API key
 2. Set the environment variable: `export SOPH_API_KEY="<key>"`
 3. The script will automatically use this environment variable
 

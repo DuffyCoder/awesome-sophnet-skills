@@ -1,11 +1,11 @@
 ---
 name: sophnet-image-ocr
-description: OCR text and table extraction from images using Sophnet API. Automatically handles local files and URLs. Integrates with sophnet-sophon-key skill for API key management.
+description: OCR text and table extraction from images using SophNet API. Automatically handles local files and URLs. Integrates with sophnet-key skill for API key management.
 ---
 
-# Image OCR (Sophnet API)
+# Image OCR (SophNet API)
 
-Extract text and tables from images using the Sophnet API.
+Extract text and tables from images using the SophNet API.
 Supports local image files and direct URLs, returning Markdown-formatted output.
 
 ## Image Path Resolution
@@ -25,7 +25,7 @@ uv run {baseDir}/scripts/ocr.py <image-path-or-url>
 ```
 
 This will:
-1. Check for `SOPH_API_KEY` (via sophnet-sophon-key skill or environment variable)
+1. Check for `SOPH_API_KEY` (via sophnet-key skill or environment variable)
 2. Convert local images to base64 automatically
 3. Call the PaddleOCR-VL API
 4. Output Markdown-formatted text with tables
@@ -68,9 +68,9 @@ The script outputs:
 ## Workflow
 
 1. Input validation (file path or URL)
-2. API key resolution via sophnet-sophon-key skill
+2. API key resolution via sophnet-key skill
 3. Convert local files to base64 data URLs
-4. Call Sophnet OCR API (timeout: 60s)
+4. Call SophNet OCR API (timeout: 60s)
 5. Parse and return Markdown output
 
 ## Agent Usage
@@ -89,13 +89,13 @@ When extracting text/tables from images for users:
 
 API Key is automatically resolved in this order:
 1. Environment variable `SOPH_API_KEY` (highest priority)
-2. Via `sophnet-sophon-key` skill (reads from Moltbot config)
+2. Via `sophnet-key` skill (reads from Moltbot config)
 
-If no key is found, the script will guide you through setup using the sophnet-sophon-key skill.
+If no key is found, the script will guide you through setup using the sophnet-key skill.
 
 ## Common Errors
 
-- `Error: SOPH_API_KEY environment variable not set.` → Run `sophnet-sophon-key` skill to configure
+- `Error: SOPH_API_KEY environment variable not set.` → Run `sophnet-key` skill to configure
 - `HTTP请求失败，状态码: ...` → Check network connection and API key validity
 - `API Error (code ...): ...` → Check API response details and key permissions
 - `Unsupported file type: ...` → Ensure the file is a valid image format
@@ -139,7 +139,7 @@ This document contains important information about the team structure...
 # Check environment variable
 echo $SOPH_API_KEY
 
-# Or run sophnet-sophon-key skill to configure
+# Or run sophnet-key skill to configure
 ```
 
 **Request timeout:**

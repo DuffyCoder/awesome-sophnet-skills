@@ -32,7 +32,7 @@ Recommended defaults:
 - Use `generate_image.sh` for automation/CI or when download is not needed.
 
 ## Implementation
-1. Ensure `SOPH_API_KEY` is available. If missing, use `sophnet-sophon-key`.
+1. Ensure `SOPH_API_KEY` is available. If missing, use `sophnet-key`.
 2. Run the script with `--prompt`.
 3. Parse output lines by key prefix.
 4. Return `IMAGE_URL` values to the user and use `PREVIEW_PATH` for local image preview when present.

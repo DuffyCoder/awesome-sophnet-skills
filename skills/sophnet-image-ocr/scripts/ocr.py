@@ -21,7 +21,7 @@ API_KEY = os.environ.get("SOPH_API_KEY")
 if not API_KEY:
     print("Error: SOPH_API_KEY environment variable not set.", file=sys.stderr)
     print("Please set it with: export SOPH_API_KEY='your-key'", file=sys.stderr)
-    print("Or obtain a key using the sophon-key skill.", file=sys.stderr)
+    print("Or obtain a key using the sophnet-key skill.", file=sys.stderr)
     sys.exit(1)
 
 

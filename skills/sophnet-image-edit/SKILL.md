@@ -1,14 +1,14 @@
 ---
 name: sophnet-image-edit
-description: Use when a user requests Sophnet image editing (image-to-image), including multi-image editing tasks (composition, style transfer, region swap) where all uploaded image paths must be resolved from Media Understanding logs (usually media/inbound/images/*) and passed in order to model Qwen-Image-Edit-2509.
+description: Use when a user requests SophNet image editing (image-to-image), including multi-image editing tasks (composition, style transfer, region swap) where all uploaded image paths must be resolved from Media Understanding logs (usually media/inbound/images/*) and passed in order to model Qwen-Image-Edit-2509.
 metadata:
-  short-description: Edit Sophnet images with strict multi-image path/order handling
+  short-description: Edit SophNet images with strict multi-image path/order handling
 ---
 
-# Sophnet Image Edit
+# SophNet Image Edit
 
 ## Overview
-Edit existing images with Sophnet shell scripts that handle task polling and structured output.
+Edit existing images with SophNet shell scripts that handle task polling and structured output.
 
 Script responsibilities:
 - `edit_image.sh`: core API caller and polling loop, outputs `INPUT_IMAGE_COUNT`, `TASK_ID`, `STATUS`, and `IMAGE_URL`.
@@ -70,7 +70,7 @@ https://example.com/style.jpg
 ```
 
 ## Implementation
-1. Ensure `SOPH_API_KEY` is available. If missing, use `sophnet-sophon-key`.
+1. Ensure `SOPH_API_KEY` is available. If missing, use `sophnet-key`.
 2. Resolve all uploaded image paths from Media Understanding logs.
 3. If this edit step follows `sophnet-image-generate`, prefer upstream `IMAGE_URL` for handoff; use `PREVIEW_PATH` only when local-file input is explicitly intended.
 4. Build prompt with explicit image order semantics.

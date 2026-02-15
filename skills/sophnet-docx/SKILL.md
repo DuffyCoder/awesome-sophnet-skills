@@ -59,7 +59,7 @@ cd "$SKILL_DIR" && uv run --project . python -c "import docx; ..."
 
 ## Delivery
 
-Local DOCX creation/editing does not require any Sophnet API key.
+Local DOCX creation/editing does not require any SophNet API key.
 
 **IMPORTANT: After creating or modifying a DOCX, ALWAYS upload it and return the download URL.** This is the default behavior — do not skip the upload step.
 
