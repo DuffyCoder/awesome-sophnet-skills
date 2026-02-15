@@ -354,31 +354,26 @@ def main():
     fps = usage.get("fps", "N/A")
 
     # Determine output path
-    local_path = args.output_file
     oss_url = None
 
     # Download if needed
-    if args.output_file or args.upload_oss:
-        if not local_path:
-            # Create temp file
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
-                local_path = tmp.name
+    # Create temp file
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
+        local_path = tmp.name
 
-        print()
-        print("Downloading video...")
-        download_video(video_url, local_path)
-        print(f"VIDEO_PATH={local_path}")
+    print()
+    print("Downloading video...")
+    download_video(video_url, local_path)
+    print(f"VIDEO_PATH={local_path}")
 
-        # Upload to OSS if requested
-        if args.upload_oss:
-            print()
-            print("Uploading to OSS...")
-            try:
-                oss_url = upload_oss(local_path, api_key)
-                print(f"OSS_URL={oss_url}")
-            except Exception as e:
-                print(f"Warning: Upload to OSS failed: {e}", file=sys.stderr)
-                oss_url = None
+    # Upload to OSS if requested
+
+    try:
+        oss_url = upload_oss(local_path, api_key)
+        print(f"OSS_URL={oss_url}")
+    except Exception as e:
+        print(f"Warning: Upload to OSS failed: {e}", file=sys.stderr)
+        oss_url = None
 
     # Print results
     print()
