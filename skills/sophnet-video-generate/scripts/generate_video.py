@@ -16,6 +16,8 @@ import urllib.error
 import tempfile
 from pathlib import Path
 from typing import Optional
+import subprocess
+
 
 # API Configuration
 API_BASE = "https://www.sophnet.com/api/open-apis/projects/easyllms/videogenerator"
@@ -24,9 +26,9 @@ TIMEOUT = 300  # 5 minutes in seconds
 POLL_INTERVAL = 5  # 5 seconds
 
 # Default values
-DEFAULT_MODEL = "Seedance-1.5-Pro"
+DEFAULT_MODEL = "ViduQ2-turbo"
 DEFAULT_SIZE = "1280*720"
-DEFAULT_DURATION = -1  # Auto-select duration
+DEFAULT_DURATION = 5  # Auto-select duration
 
 
 def get_api_key() -> str:
@@ -196,7 +198,7 @@ def make_get_request(url: str, api_key: str) -> dict:
 
 def download_video(url: str, output_path: str) -> None:
     """Download video from URL to local path."""
-    urllib.request.urlretrieve(url, output_path)
+    subprocess.run(["curl", "-L", "-o", output_path, url], check=True)
 
 
 def main():

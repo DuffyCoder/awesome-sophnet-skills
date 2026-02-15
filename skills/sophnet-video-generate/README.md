@@ -7,7 +7,7 @@ Generate videos using Sophnet Video Generation API.
 - **Text-to-video**: Generate videos from text prompts
 - **Image-to-video**: Generate videos from first frame image
 - **Image-to-video (first + last)**: Generate videos with transition between two images
-- **Multiple models**: Seedance-1.5-Pro, Wan2.6-T2V/I2V, Wan2.2-T2V/I2V-A14B, ViduQ2-pro-fast
+- **Multiple models**: Seedance-1.5-Pro, Wan2.6-T2V/I2V, Wan2.2-T2V/I2V-A14B, ViduQ2-turbo
 - **Customizable resolution**: 480P, 720P, 1080P
 - **Customizable duration**: 1-12 seconds depending on model
 
@@ -75,14 +75,14 @@ Use `OSS_URL` for sharing via message tool.
 - `Seedance-1.5-Pro`: 动态判断 (默认)
 
 ### 生数系列
-- `ViduQ2-pro-fast`: 动态判断
+- `ViduQ2-turbo`: 动态判断
 
 ## Default Behavior
 
 If not specified:
-- **Model**: `Seedance-1.5-Pro`
+- **Model**: `ViduQ2-turbo`
 - **Resolution**: `1280*720` (720P)
-- **Duration**: `-1` (auto-select for Seedance-1.5-Pro)
+- **Duration**: `5` (auto-select for ViduQ2-turbo)
 
 ## API Integration
 

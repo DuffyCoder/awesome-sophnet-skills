@@ -66,7 +66,7 @@ This will:
 - `Seedance-1.5-Pro`: 动态判断 (默认)
 
 ### 生数系列
-- `ViduQ2-pro-fast`: 动态判断
+- `ViduQ2-turbo`: 动态判断
 
 ## Output Contract
 
@@ -118,7 +118,7 @@ When generating videos for users:
    - Wan2.6-I2V (图生视频)
    - Wan2.2-T2V-A14B (文生视频，开源)
    - Wan2.2-I2V-A14B (图生视频，开源)
-   - ViduQ2-pro-fast (文生视频 + 图生视频)
+   - ViduQ2-turbo (文生视频 + 图生视频)
 
    下次可以直接指定模型和参数来生成，例如：
    --model Wan2.6-T2V --size "1920*1080" --duration 10
@@ -185,14 +185,14 @@ If user doesn't specify:
 
 ## Common Errors
 
-- `Error: No API key provided` -> Run `sophon-key` setup or set `SOPH_API_KEY`
+- `Error: No API key provided` -> Run `sophnet-key` setup or set `SOPH_API_KEY`
 - `Error: Timeout after 300s` -> Video generation took too long, task may still be running
 - `Error: No video URL found` -> Check task response or try again
 - `Error: Failed to create task` -> Check API key permissions, model support, or request format
 
 ## 注意事项
 
-- **前置检查**：调用 `sophon-key` skill，检测并配置 SOPH_API_KEY 环境变量
+- **前置检查**：调用 `sophnet-key` skill，检测并配置 SOPH_API_KEY 环境变量
 - **默认模型**：Seedance-1.5-Pro，分辨率 1280*720 (720P)
 - **超时时间**：5分钟 (300秒)
 - **轮询间隔**：5秒
