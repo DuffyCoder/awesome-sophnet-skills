@@ -26,7 +26,7 @@ TIMEOUT = 300  # 5 minutes in seconds
 POLL_INTERVAL = 5  # 5 seconds
 
 # Default values
-DEFAULT_MODEL = "Wan2.6-T2V"
+DEFAULT_MODEL = "Wan2.6-I2V"
 DEFAULT_SIZE = "1280*720"
 DEFAULT_DURATION = 5
 
@@ -95,6 +95,34 @@ def upload_oss(file_path: str, api_key: str) -> str:
         raise ValueError("requests library not available. Install with: pip install requests")
     except requests.exceptions.RequestException as e:
         raise ValueError(f"Upload network error: {e}")
+
+
+def is_url(path: str) -> bool:
+    """Check if the input string is a URL."""
+    return path.startswith(("http://", "https://"))
+
+
+def process_image_input(image_input: Optional[str], api_key: str) -> Optional[str]:
+    """
+    Process image input - return URL if it's already a URL,
+    or upload to OSS and return URL if it's a local path.
+
+    Args:
+        image_input: Image URL or local file path
+        api_key: API key for authentication
+
+    Returns:
+        str: Image URL
+    """
+    if not image_input:
+        return None
+
+    if is_url(image_input):
+        return image_input
+
+    # Upload to OSS
+    print(f"Uploading image to OSS: {image_input}")
+    return upload_oss(image_input, api_key)
 
 
 def create_request(
@@ -213,13 +241,27 @@ def main():
     # Get API key
     api_key = args.api_key or get_api_key()
 
+    # Process image inputs - convert local paths to URLs via OSS upload
+    first_frame_url = None
+    last_frame_url = None
+
+    if args.first_frame:
+        first_frame_url = process_image_input(args.first_frame, api_key)
+        if first_frame_url != args.first_frame:
+            print(f"First Frame (OSS URL): {first_frame_url}")
+
+    if args.last_frame:
+        last_frame_url = process_image_input(args.last_frame, api_key)
+        if last_frame_url != args.last_frame:
+            print(f"Last Frame (OSS URL): {last_frame_url}")
+
     # Build request
     request_body = create_request(
         model=args.model,
         prompt=args.prompt,
         negative_prompt=args.negative_prompt,
-        first_frame_url=args.first_frame,
-        last_frame_url=args.last_frame,
+        first_frame_url=first_frame_url,
+        last_frame_url=last_frame_url,
         size=args.size,
         duration=args.duration,
         generate_audio=args.generate_audio,
@@ -236,10 +278,10 @@ def main():
         print(f"Prompt: {args.prompt}")
     if args.negative_prompt:
         print(f"Negative Prompt: {args.negative_prompt}")
-    if args.first_frame:
-        print(f"First Frame: {args.first_frame}")
-    if args.last_frame:
-        print(f"Last Frame: {args.last_frame}")
+    if first_frame_url:
+        print(f"First Frame: {first_frame_url}")
+    if last_frame_url:
+        print(f"Last Frame: {last_frame_url}")
     if args.generate_audio:
         print(f"Generate Audio: true")
     if args.draft:
@@ -253,12 +295,18 @@ def main():
         print(f"Error: Failed to create task: {e}", file=sys.stderr)
         sys.exit(1)
 
-    if response.get("code") != 0:
+    # Handle both response formats: {code: 0, data: {task_id}} or {status: 0, result: {task_id}}
+    if response.get("code") != 0 and response.get("status") != 0:
         print("Error: Failed to create task", file=sys.stderr)
         print(json.dumps(response, indent=2), file=sys.stderr)
         sys.exit(1)
 
-    task_id = response["data"]["task_id"]
+    task_id = response.get("data", {}).get("task_id") or response.get("result", {}).get("task_id")
+    if not task_id:
+        print("Error: No task ID found in response", file=sys.stderr)
+        print(json.dumps(response, indent=2), file=sys.stderr)
+        sys.exit(1)
+
     print(f"Task ID: {task_id}")
     print()
 

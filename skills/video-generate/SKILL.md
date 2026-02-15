@@ -1,6 +1,6 @@
 ---
 name: video-generate
-description: 'Generate videos using SophNet Video Generation API. Supports text-to-video, image-to-video (first frame), and image-to-video (first + last frame). Default model:Wan2.6-T2V with 720p (1280*720) resolution and 5s duration. Polls for completion with 5-minute timeout. Use when user asks to generate videos, create videos from text or images.'
+description: 'Generate videos using SophNet Video Generation API. Supports text-to-video, image-to-video (first frame), and image-to-video (first + last frame). Default model:Wan2.6-I2V with 720p (1280*720) resolution and 5s duration. Polls for completion with 5-minute timeout. Use when user asks to generate videos, create videos from text or images.'
 ---
 
 # SophNet Video Generation
@@ -46,7 +46,7 @@ This will:
 
 - `--prompt TEXT` (optional): Text prompt for text-to-video or to guide image-to-video
 - `--negative-prompt TEXT` (optional): Negative prompt
-- `--model MODEL` (optional): Model name. Default: `Wan2.6-T2V`
+- `--model MODEL` (optional): Model name. Default: `Wan2.6-I2V`
 - `--size SIZE` (optional): Resolution. Default: `1280*720`
   - 480P: `832*480`, `480*332`, `640*640`
   - 720P: `1280*720`, `720*1280`, `960*960`, `1088*832`, `832*1088`
@@ -124,7 +124,7 @@ When generating videos for users:
    视频生成完成！
 
    生成参数：
-   - 模型：Wan2.6-T2V
+   - 模型：Wan2.6-I2V
    - 分辨率：1280*720 (720P)
    - 时长：5秒
    - 提示词：A serene sunset over the ocean
@@ -139,7 +139,7 @@ When generating videos for users:
    - ViduQ2-turbo (文生视频 + 图生视频)
 
    下次可以直接指定模型和参数来生成，例如：
-   --model Wan2.6-T2V --size "1920*1080" --duration 10
+   --model Wan2.6-I2V --size "1920*1080" --duration 10
    ```
 
 6. If you want to share the video with users via `message` tool, use `--upload-oss`:
@@ -201,7 +201,7 @@ cd "{baseDir}" && uv run --no-build-isolation python scripts/generate_video.py \
 
 If user doesn't specify:
 
-- **Model**: Uses `Wan2.6-T2V`
+- **Model**: Uses `Wan2.6-I2V`
 - **Resolution**: Uses `1280*720` (720P)
 - **Duration**: Uses `5` seconds
 - **Parameters**: Uses each model's default parameters
@@ -216,7 +216,7 @@ If user doesn't specify:
 ## 注意事项
 
 - **API Key**：已内置在二进制文件中，无需配置 SOPH_API_KEY 环境变量
-- **默认模型**：Wan2.6-T2V，分辨率 1280\*720 (720P)，时长 5 秒
+- **默认模型**：Wan2.6-I2V，分辨率 1280\*720 (720P)，时长 5 秒
 - **超时时间**：5分钟 (300秒)
 - **轮询间隔**：5秒
 - **异步任务**：视频生成是异步的，需要轮询查询状态
