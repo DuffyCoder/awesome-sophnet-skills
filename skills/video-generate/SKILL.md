@@ -1,6 +1,6 @@
 ---
 name: video-generate
-description: Generate videos using SophNet Video Generation API. Supports text-to-video, image-to-video (first frame), and image-to-video (first + last frame). Default model: Wan2.6-T2V with 720p (1280*720) resolution and 5s duration. Polls for completion with 5-minute timeout. Use when user asks to generate videos, create videos from text or images.
+description: 'Generate videos using SophNet Video Generation API. Supports text-to-video, image-to-video (first frame), and image-to-video (first + last frame). Default model:Wan2.6-T2V with 720p (1280*720) resolution and 5s duration. Polls for completion with 5-minute timeout. Use when user asks to generate videos, create videos from text or images.'
 ---
 
 # SophNet Video Generation
@@ -10,6 +10,14 @@ Generate videos using the SophNet Video Generation API with support for multiple
 ## 前置检查
 
 API Key 已内置在二进制文件中，无需额外配置。
+
+## Image Path Resolution
+When users upload images in chat channels, files are usually saved under `media/inbound/images/` in the workspace. Use Media Understanding logs to get exact resolved paths.
+
+Typical log pattern:
+```
+[Media Understanding] Resolved relative path: "media/inbound/images/xxx.jpg" -> "/absolute/path/to/workspace/media/inbound/images/xxx.jpg"
+```
 
 ## Quick Start
 
