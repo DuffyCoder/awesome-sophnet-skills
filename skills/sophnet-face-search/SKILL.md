@@ -1,148 +1,91 @@
 ---
 name: sophnet-face-search
-description: Face detection and similarity search using SophNet API. Use when the user needs to find similar faces across multiple images, detect faces in photos, or compare face embeddings. Supports two-step workflow - extract query face embedding, then search for similar faces in a collection of images.
+description: Search for similar faces in image directories using face detection and embedding comparison. Use when users want to find photos containing a specific person, search for similar faces across image collections, or identify matching faces in photo libraries. Supports automatic path extraction from logs (patterns like "Resolved relative path"), configurable similarity thresholds, and visual preview of query and result faces.
 ---
-# SophNet Face Search
 
-Search for similar faces across multiple images using face detection and embedding comparison.
+# Face Search
 
-## Overview
-
-This skill provides face detection and similarity search capabilities using the SophNet face detection API. It supports a two-step workflow:
-
-1. **Extract query face**: Detect the largest face in a query image and extract its embedding
-2. **Search similar faces**: Find similar faces in a collection of images by comparing embeddings
+Search for similar faces in image directories using Sophnet's face detection API.
 
 ## Prerequisites
 
-The skill uses `uv` for Python environment management and requires:
-- SophNet API key (obtained via the `sophnet-key` skill)
-- Python 3.8+
-- opencv-python-headless, numpy, requests
+- Sophnet API key (automatically fetched via sophnet-key skill)
+- Python packages: opencv-python-headless, numpy, requests
 
-## Image Path Resolution
+## Usage
 
-**Important:** When users upload images via webchat or other channels, Moltbot saves them to `media/inbound/images/` in the workspace. The system prompt includes media understanding logs that show the resolved absolute path.
+When a user wants to search for faces:
 
-Look for logs like:
-```
-[Media Understanding] Resolved relative path: "media/inbound/images/xxx.jpg" -> "/absolute/path/to/workspace/media/inbound/images/xxx.jpg"
-```
-
-## Workflow
-
-### Step 1: Extract Query Face Embedding
-
-Extract the largest face from a query image:
+1. **Call sophnet-key skill first** to ensure SOPH_API_KEY is set
+2. **Extract image path** from user input or recent logs (look for patterns like `Resolved relative path: "media/inbound/images/xxx.jpg"`)
+3. **Run the search** using uv from /tmp to avoid workspace pyproject.toml conflicts:
 
 ```bash
 uv run --with opencv-python-headless --with numpy --with requests \
-  {baseDir}/scripts/face_search.py base <query-image-path> \
-  [--det-thr 0.7] [--output-dir <dir>]
+  python {baseDir}/scripts/face_search.py \
+  --image_path /absolute/path/to/query.jpg \
+  --search_image_path /absolute/path/to/search/folder \
+  --threshold 0.5
 ```
 
-**Parameters:**
-- `query-image-path`: Path to the query image (prefer absolute path, e.g., `/absolute/path/to/workspace/media/inbound/images/xxx.jpg`)
-- `--det-thr`: Detection confidence threshold (default: 0.7)
-- `--output-dir`: Optional output directory for embedding JSON (recommended: `/tmp/face-search-output`)
+## Parameters
 
-**Output:**
-- Embedding JSON file (e.g., `image_embedding.json`)
-- Face preview image with bounding box (e.g., `image_face.jpg`)
-- Console output includes `FACE_PREVIEW:<path>` marker for preview
+- `--image_path`: Query image containing the face to search for (required)
+- `--search_image_path`: Directory to search for similar faces (required)
+- `--det-thr`: Face detection threshold (default: 0.5)
+- `--threshold`: Similarity threshold for matching (default: 0.5, range: 0.0-1.0)
 
-**Important:** Always display the face preview image to the user using the `read` tool after this step.
+## Output
 
-### Step 2: Search for Similar Faces
+The script outputs:
+1. Query face preview with bounding box: `MEDIA:/path/to/query_face.jpg`
+2. List of matching images with similarity scores
+3. Each result shows: `MEDIA:/absolute/path/to/result.jpg`
 
-Search for similar faces in a collection of images:
+**After the search completes, format the output as follows:**
 
-```bash
-uv run --with opencv-python-headless --with numpy --with requests \
-  {baseDir}/scripts/face_search.py search <query-embedding.json> <image1> <image2> ... \
-  [--det-thr 0.5] [--threshold 0.5] [--output-dir <dir>]
+```
+查询人脸预览：
+[Use read tool to display the query face (*_face.jpg)]
+
+搜索到 N 个相似人脸：
+[Use read tool to display each matching result image]
+
+搜索到的图片列表：
+/absolute/path/to/result1.jpg
+/absolute/path/to/result2.png
+/absolute/path/to/result3.jpg
 ```
 
-**Parameters:**
-- `query-embedding.json`: The embedding JSON from step 1 (absolute path, e.g., `/tmp/face-search-output/xxx_embedding.json`)
-- `image1 image2 ...`: List of images to search (relative to workspace root or absolute paths)
-- `--det-thr`: Detection confidence threshold (default: 0.5)
-- `--threshold`: Similarity threshold (default: 0.5, range: 0-1)
-- `--output-dir`: Optional output directory for embeddings
+**Important:**
+- Always show absolute paths in the final list
+- Use `read` tool to visually display both query face and all matching results
+- Extract absolute paths from the script's MEDIA: output lines
 
-**Output:**
-- List of matching images with similarity scores
-- Console output includes `MATCHED_IMAGES:<paths>` marker
-- Each match shows: image path, face index, similarity percentage
+## Path Extraction
 
-**Important:** Display preview images for all matched results using the `read` tool.
-
-## API Key Management
-
-Before running face search, obtain the SophNet API key:
-
-1. Use the `sophnet-key` skill to retrieve the API key
-2. Set the environment variable: `export SOPH_API_KEY="<key>"`
-3. The script will automatically use this environment variable
-
-## Output Format Guidelines
-
-When presenting results to the user:
-
-- **List only**: image path and similarity percentage
-- **Do NOT**: add image descriptions, interpretations, or conclusions like "是同一个人" or "不是同一个人"
-- **Do**: display preview images for query face and all matched results
-- **Format**: `<image-path> (人脸#<index>, 相似度: <percentage>%)`
-
-Example output:
+When users provide images through chat, look for log patterns like:
 ```
-找到 2 个相似人脸:
-  /path/to/image1.jpg (人脸#0, 相似度: 85.32%)
-  /path/to/image2.jpg (人脸#0, 相似度: 72.15%)
+Resolved relative path: "media/inbound/images/xxx.jpg" -> "/absolute/path/to/workspace/media/inbound/images/xxx.jpg"
 ```
 
-## Example Usage
+Extract the absolute path (right side of `->`) for use with the script.
 
-Complete workflow:
+## Example Workflow
 
-```bash
-# Step 1: Extract query face
-uv run --with opencv-python-headless --with numpy --with requests \
-  {baseDir}/scripts/face_search.py base media/inbound/images/query.jpg \
-  --output-dir /tmp/face-search-output
+User: "Find photos with this person in my vacation folder"
 
-# Display the face preview to user
-# (use read tool on the _face.jpg output from FACE_PREVIEW marker)
-
-# Step 2: Search similar faces
-uv run --with opencv-python-headless --with numpy --with requests \
-  {baseDir}/scripts/face_search.py search \
-  /tmp/face-search-output/query_embedding.json \
-  media/inbound/images/photo1.jpg \
-  media/inbound/images/photo2.jpg \
-  media/inbound/images/photo3.jpg \
-  --threshold 0.6 \
-  --output-dir /tmp/face-search-output
-
-# Display all matched image previews to user
-# (use read tool on each matched image from MATCHED_IMAGES marker)
-```
-
-## Thresholds
-
-- **Detection threshold** (`--det-thr`): Minimum confidence for face detection
-  - Query: 0.7 (higher = more confident faces only)
-  - Search: 0.5 (lower = detect more faces)
-  
-- **Similarity threshold** (`--threshold`): Minimum cosine similarity for matches
-  - Default: 0.5 (50% similarity)
-  - Range: 0.0 to 1.0
-  - Higher values = stricter matching
+1. Call sophnet-key skill to get API key
+2. Extract query image path from logs (or use most recent image from media/inbound/images)
+3. Run: `uv run --with opencv-python-headless --with numpy --with requests python /path/to/face_search.py --image_path /path/to/query.jpg --search_image_path /path/to/vacation --threshold 0.5`
+4. **Display the results with images:**
+   - Use `read` tool to display the query face preview (the `*_face.jpg` file)
+   - Use `read` tool to display each matching result image
+   - This allows users to visually verify the matches
 
 ## Notes
 
-- The script uses opencv-python-headless (no GUI dependencies)
-- Face embeddings are cached as JSON files for reuse
-- Similarity is computed using cosine similarity between embeddings
-- Only the largest face is extracted from the query image
-- All faces above the detection threshold are searched in target images
+- Always use absolute paths for reliability
+- Lower threshold (e.g., 0.3) finds more matches but may include false positives
+- Higher threshold (e.g., 0.7) is more strict but may miss some matches
+- The script caches embeddings as JSON files to speed up repeated searches
