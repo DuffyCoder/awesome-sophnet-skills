@@ -25,7 +25,7 @@ uv run --with opencv-python-headless --with numpy --with requests \
   python {baseDir}/scripts/face_search.py \
   --image_path /absolute/path/to/query.jpg \
   --search_image_path /absolute/path/to/search/folder \
-  --threshold 0.5
+  --threshold 0.4
 ```
 
 ## Parameters
@@ -33,7 +33,7 @@ uv run --with opencv-python-headless --with numpy --with requests \
 - `--image_path`: Query image containing the face to search for (required)
 - `--search_image_path`: Directory to search for similar faces (required)
 - `--det-thr`: Face detection threshold (default: 0.5)
-- `--threshold`: Similarity threshold for matching (default: 0.5, range: 0.0-1.0)
+- `--threshold`: Similarity threshold for matching (default: 0.4, range: 0.0-1.0)
 
 ## Output
 
@@ -77,7 +77,7 @@ User: "Find photos with this person in my vacation folder"
 
 1. Call sophnet-key skill to get API key
 2. Extract query image path from logs (or use most recent image from media/inbound/images)
-3. Run: `uv run --with opencv-python-headless --with numpy --with requests python /path/to/face_search.py --image_path /path/to/query.jpg --search_image_path /path/to/vacation --threshold 0.5`
+3. Run: `uv run --with opencv-python-headless --with numpy --with requests python /path/to/face_search.py --image_path /path/to/query.jpg --search_image_path /path/to/vacation --threshold 0.4`
 4. **Display the results with images:**
    - Use `read` tool to display the query face preview (the `*_face.jpg` file)
    - Use `read` tool to display each matching result image

@@ -20,7 +20,7 @@ FACE_API_URL = "https://www.sophnet.com/api/open-apis/projects/detect_and_embed"
 # 默认阈值
 DEFAULT_QUERY_THRESHOLD = 0.7
 DEFAULT_SEARCH_THRESHOLD = 0.5
-DEFAULT_SIMILARITY_THRESHOLD = 0.5
+DEFAULT_SIMILARITY_THRESHOLD = 0.4
 
 def get_soph_api_key():
     """获取sophnet API密钥"""
