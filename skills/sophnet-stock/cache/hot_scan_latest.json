@@ -1,0 +1,624 @@
+{
+  "scan_time": "2026-02-24T10:05:43.360450+00:00",
+  "top_trending": [
+    {
+      "symbol": "BTC",
+      "mentions": 18,
+      "sources": [
+        "CoinGecko Trending",
+        "Google News Crypto",
+        "Reddit Crypto",
+        "CoinGecko Movers"
+      ],
+      "signals": [
+        "\ud83d\udcc9 bearish (-4.8%)",
+        "\ud83d\udcc9 dumping (-4.8%)"
+      ]
+    },
+    {
+      "symbol": "ETH",
+      "mentions": 9,
+      "sources": [
+        "CoinGecko Trending",
+        "Google News Crypto",
+        "Reddit Crypto",
+        "CoinGecko Movers"
+      ],
+      "signals": [
+        "\ud83d\udcc9 bearish (-5.1%)",
+        "\ud83d\udcc9 dumping (-5.1%)"
+      ]
+    },
+    {
+      "symbol": "IBM",
+      "mentions": 8,
+      "sources": [
+        "Reddit WSB",
+        "Yahoo Losers",
+        "Yahoo Gainers",
+        "Yahoo Most Active"
+      ],
+      "signals": [
+        "\ud83e\udd8d WSB: IBM shares plummet 13% \u2013 worst day ...",
+        "\ud83e\udd8d WSB: IBM crashed 13% because the market ...",
+        "\ud83e\udd8d WSB: Short IBM..."
+      ]
+    },
+    {
+      "symbol": "NVO",
+      "mentions": 4,
+      "sources": [
+        "Reddit WSB",
+        "Yahoo Losers",
+        "Yahoo Gainers",
+        "Yahoo Most Active"
+      ],
+      "signals": [
+        "\ud83e\udd8d WSB: I see fat people everywhere - 100k ..."
+      ]
+    },
+    {
+      "symbol": "HIMS",
+      "mentions": 4,
+      "sources": [
+        "Reddit WSB",
+        "Yahoo Losers",
+        "Yahoo Gainers",
+        "Yahoo Most Active"
+      ],
+      "signals": [
+        "\ud83e\udd8d WSB: HIMS YOLO BEFORE EARNINGS WENT ALL ..."
+      ]
+    },
+    {
+      "symbol": "PIPPIN",
+      "mentions": 3,
+      "sources": [
+        "CoinGecko Trending",
+        "CoinGecko Movers"
+      ],
+      "signals": [
+        "\ud83d\ude80 bullish (+10.4%)",
+        "\ud83d\ude80 pumping (+10.3%)"
+      ]
+    },
+    {
+      "symbol": "HYPE",
+      "mentions": 3,
+      "sources": [
+        "CoinGecko Trending",
+        "CoinGecko Movers"
+      ],
+      "signals": [
+        "\ud83d\udcc9 bearish (-5.8%)",
+        "\ud83d\udcc9 dumping (-5.8%)"
+      ]
+    },
+    {
+      "symbol": "SUI",
+      "mentions": 3,
+      "sources": [
+        "CoinGecko Trending",
+        "CoinGecko Movers"
+      ],
+      "signals": [
+        "\ud83d\udcc9 bearish (-5.5%)",
+        "\ud83d\udcc9 dumping (-5.5%)"
+      ]
+    },
+    {
+      "symbol": "UBER",
+      "mentions": 3,
+      "sources": [
+        "Yahoo Losers",
+        "Yahoo Gainers",
+        "Yahoo Most Active"
+      ],
+      "signals": []
+    },
+    {
+      "symbol": "ACLX",
+      "mentions": 3,
+      "sources": [
+        "Yahoo Losers",
+        "Yahoo Gainers",
+        "Yahoo Most Active"
+      ],
+      "signals": []
+    },
+    {
+      "symbol": "IBRX",
+      "mentions": 3,
+      "sources": [
+        "Yahoo Losers",
+        "Yahoo Gainers",
+        "Yahoo Most Active"
+      ],
+      "signals": []
+    },
+    {
+      "symbol": "VRE",
+      "mentions": 3,
+      "sources": [
+        "Yahoo Losers",
+        "Yahoo Gainers",
+        "Yahoo Most Active"
+      ],
+      "signals": []
+    },
+    {
+      "symbol": "VKTX",
+      "mentions": 3,
+      "sources": [
+        "Yahoo Losers",
+        "Yahoo Gainers",
+        "Yahoo Most Active"
+      ],
+      "signals": []
+    },
+    {
+      "symbol": "USAR",
+      "mentions": 3,
+      "sources": [
+        "Yahoo Losers",
+        "Yahoo Gainers",
+        "Yahoo Most Active"
+      ],
+      "signals": []
+    },
+    {
+      "symbol": "BLLN",
+      "mentions": 3,
+      "sources": [
+        "Yahoo Losers",
+        "Yahoo Gainers",
+        "Yahoo Most Active"
+      ],
+      "signals": []
+    },
+    {
+      "symbol": "RNG",
+      "mentions": 3,
+      "sources": [
+        "Yahoo Losers",
+        "Yahoo Gainers",
+        "Yahoo Most Active"
+      ],
+      "signals": []
+    },
+    {
+      "symbol": "STEP",
+      "mentions": 3,
+      "sources": [
+        "Yahoo Losers",
+        "Yahoo Gainers",
+        "Yahoo Most Active"
+      ],
+      "signals": []
+    },
+    {
+      "symbol": "NVDA",
+      "mentions": 3,
+      "sources": [
+        "Yahoo Losers",
+        "Yahoo Gainers",
+        "Yahoo Most Active"
+      ],
+      "signals": []
+    },
+    {
+      "symbol": "SOFI",
+      "mentions": 3,
+      "sources": [
+        "Yahoo Losers",
+        "Yahoo Gainers",
+        "Yahoo Most Active"
+      ],
+      "signals": []
+    },
+    {
+      "symbol": "PYPL",
+      "mentions": 3,
+      "sources": [
+        "Yahoo Losers",
+        "Yahoo Gainers",
+        "Yahoo Most Active"
+      ],
+      "signals": []
+    }
+  ],
+  "crypto_highlights": [
+    {
+      "symbol": "ESP",
+      "name": "Espresso",
+      "rank": 261,
+      "price_change_24h": 113.68,
+      "source": "coingecko_trending"
+    },
+    {
+      "symbol": "BTC",
+      "name": "Bitcoin",
+      "rank": 1,
+      "price_change_24h": -4.83,
+      "source": "coingecko_trending"
+    },
+    {
+      "symbol": "SKR",
+      "name": "Seeker",
+      "rank": 203,
+      "price_change_24h": 46.12,
+      "source": "coingecko_trending"
+    },
+    {
+      "symbol": "ETH",
+      "name": "Ethereum",
+      "rank": 2,
+      "price_change_24h": -5.08,
+      "source": "coingecko_trending"
+    },
+    {
+      "symbol": "PIPPIN",
+      "name": "pippin",
+      "rank": 73,
+      "price_change_24h": 10.43,
+      "source": "coingecko_trending"
+    },
+    {
+      "symbol": "HYPE",
+      "name": "Hyperliquid",
+      "rank": 16,
+      "price_change_24h": -5.84,
+      "source": "coingecko_trending"
+    },
+    {
+      "symbol": "PENGU",
+      "name": "Pudgy Penguins",
+      "rank": 111,
+      "price_change_24h": -4.56,
+      "source": "coingecko_trending"
+    },
+    {
+      "symbol": "SOL",
+      "name": "Solana",
+      "rank": 7,
+      "price_change_24h": -4.7,
+      "source": "coingecko_trending"
+    },
+    {
+      "symbol": "SUI",
+      "name": "Sui",
+      "rank": 31,
+      "price_change_24h": -5.52,
+      "source": "coingecko_trending"
+    },
+    {
+      "symbol": "POWER",
+      "name": "Power Protocol",
+      "rank": 219,
+      "price_change_24h": 42.81,
+      "source": "coingecko_trending"
+    },
+    {
+      "symbol": "BCH",
+      "name": "Bitcoin Cash",
+      "price": 483.73,
+      "change_24h": -11.18,
+      "volume": 484948749,
+      "source": "coingecko_movers"
+    },
+    {
+      "symbol": "PUMP",
+      "name": "Pump.fun",
+      "price": 0.00175124,
+      "change_24h": -9.45,
+      "volume": 94283894,
+      "source": "coingecko_movers"
+    },
+    {
+      "symbol": "ATOM",
+      "name": "Cosmos Hub",
+      "price": 2.04,
+      "change_24h": -8.49,
+      "volume": 45364771,
+      "source": "coingecko_movers"
+    },
+    {
+      "symbol": "WLFI",
+      "name": "World Liberty Financial",
+      "price": 0.10739,
+      "change_24h": -8.36,
+      "volume": 187109957,
+      "source": "coingecko_movers"
+    },
+    {
+      "symbol": "ENA",
+      "name": "Ethena",
+      "price": 0.094443,
+      "change_24h": -6.69,
+      "volume": 78558522,
+      "source": "coingecko_movers"
+    },
+    {
+      "symbol": "ZEC",
+      "name": "Zcash",
+      "price": 232.46,
+      "change_24h": -6.43,
+      "volume": 252862150,
+      "source": "coingecko_movers"
+    },
+    {
+      "symbol": "UNI",
+      "name": "Uniswap",
+      "price": 3.32,
+      "change_24h": -6.08,
+      "volume": 205953183,
+      "source": "coingecko_movers"
+    },
+    {
+      "symbol": "DOGE",
+      "name": "Dogecoin",
+      "price": 0.091102,
+      "change_24h": -5.66,
+      "volume": 932262291,
+      "source": "coingecko_movers"
+    },
+    {
+      "symbol": "APT",
+      "name": "Aptos",
+      "price": 0.805599,
+      "change_24h": -5.61,
+      "volume": 86476006,
+      "source": "coingecko_movers"
+    },
+    {
+      "symbol": "ONDO",
+      "name": "Ondo",
+      "price": 0.243713,
+      "change_24h": -5.42,
+      "volume": 41678182,
+      "source": "coingecko_movers"
+    },
+    {
+      "symbol": "GT",
+      "name": "Gate",
+      "price": 6.66,
+      "change_24h": -5.24,
+      "volume": 7267225,
+      "source": "coingecko_movers"
+    },
+    {
+      "symbol": "ADA",
+      "name": "Cardano",
+      "price": 0.256966,
+      "change_24h": -5.18,
+      "volume": 393878450,
+      "source": "coingecko_movers"
+    },
+    {
+      "symbol": "RENDER",
+      "name": "Render",
+      "price": 1.34,
+      "change_24h": -5.08,
+      "volume": 43386980,
+      "source": "coingecko_movers"
+    },
+    {
+      "symbol": "WLD",
+      "name": "Worldcoin",
+      "price": 0.366655,
+      "change_24h": -4.76,
+      "volume": 68817138,
+      "source": "coingecko_movers"
+    },
+    {
+      "symbol": "KAS",
+      "name": "Kaspa",
+      "price": 0.02940924,
+      "change_24h": -4.75,
+      "volume": 13801131,
+      "source": "coingecko_movers"
+    }
+  ],
+  "stock_highlights": [
+    {
+      "symbol": "IBM",
+      "category": "gainers",
+      "source": "yahoo_gainers"
+    },
+    {
+      "symbol": "NVO",
+      "category": "gainers",
+      "source": "yahoo_gainers"
+    },
+    {
+      "symbol": "UBER",
+      "category": "gainers",
+      "source": "yahoo_gainers"
+    },
+    {
+      "symbol": "HIMS",
+      "category": "gainers",
+      "source": "yahoo_gainers"
+    },
+    {
+      "symbol": "ACLX",
+      "category": "gainers",
+      "source": "yahoo_gainers"
+    },
+    {
+      "symbol": "IBRX",
+      "category": "gainers",
+      "source": "yahoo_gainers"
+    },
+    {
+      "symbol": "VRE",
+      "category": "gainers",
+      "source": "yahoo_gainers"
+    },
+    {
+      "symbol": "VKTX",
+      "category": "gainers",
+      "source": "yahoo_gainers"
+    },
+    {
+      "symbol": "USAR",
+      "category": "gainers",
+      "source": "yahoo_gainers"
+    },
+    {
+      "symbol": "BLLN",
+      "category": "gainers",
+      "source": "yahoo_gainers"
+    },
+    {
+      "symbol": "RNG",
+      "category": "gainers",
+      "source": "yahoo_gainers"
+    },
+    {
+      "symbol": "STEP",
+      "category": "gainers",
+      "source": "yahoo_gainers"
+    },
+    {
+      "symbol": "NVDA",
+      "category": "gainers",
+      "source": "yahoo_gainers"
+    },
+    {
+      "symbol": "SOFI",
+      "category": "gainers",
+      "source": "yahoo_gainers"
+    },
+    {
+      "symbol": "PYPL",
+      "category": "gainers",
+      "source": "yahoo_gainers"
+    }
+  ],
+  "social_buzz": [
+    {
+      "platform": "reddit_wsb",
+      "title": "IBM shares plummet 13% \u2013 worst day since 2000 \u2013 after Anthropic launches programming AI tool",
+      "score": 1377,
+      "tickers": [
+        "IBM"
+      ]
+    },
+    {
+      "platform": "reddit_wsb",
+      "title": "IBM crashed 13% because the market found out LLMs can write code, bought $190k",
+      "score": 2187,
+      "tickers": [
+        "IBM"
+      ]
+    },
+    {
+      "platform": "reddit_wsb",
+      "title": "$SPY loves you",
+      "score": 54,
+      "tickers": [
+        "SPY"
+      ]
+    },
+    {
+      "platform": "reddit_wsb",
+      "title": "I see fat people everywhere - 100k on NVO",
+      "score": 312,
+      "tickers": [
+        "NVO"
+      ]
+    },
+    {
+      "platform": "reddit_wsb",
+      "title": "HIMS YOLO BEFORE EARNINGS WENT ALL IN! \ud83d\ude80",
+      "score": 312,
+      "tickers": [
+        "HIMS",
+        "WENT"
+      ]
+    },
+    {
+      "platform": "reddit_wsb",
+      "title": "HIMS YOLO BEFORE EARNINGS WENT ALL IN! \ud83d\ude80",
+      "score": 312,
+      "tickers": [
+        "HIMS",
+        "WENT"
+      ]
+    },
+    {
+      "platform": "reddit_wsb",
+      "title": "Triple downed on $MSFT $405 March 6th calls after being down ~80%",
+      "score": 229,
+      "tickers": [
+        "MSFT"
+      ]
+    },
+    {
+      "platform": "reddit_wsb",
+      "title": "AWS suffered \u2018at least two outages\u2019 caused by AI tools, and now I\u2019m convinced we\u2019re living inside a ",
+      "score": 4543,
+      "tickers": [
+        "AWS"
+      ]
+    },
+    {
+      "platform": "reddit_wsb",
+      "title": "Short IBM",
+      "score": 46,
+      "tickers": [
+        "IBM"
+      ]
+    }
+  ],
+  "breaking_news": [
+    {
+      "title": "Bitcoin Cash, Hyperliquid, Pump.fun as Bitcoin drops below $64,000 - FXStreet",
+      "tickers": [
+        "BTC"
+      ]
+    },
+    {
+      "title": "Lime Co-Founder Brad Bao Faces $100M Federal RICO Lawsuit: Complaint Alleges Crypto Pump-and-Dump Scheme Through Cere Network Token - FinanceFeeds",
+      "tickers": [
+        "RICO"
+      ]
+    },
+    {
+      "title": "XRP, BTC Price News: Ripple linked token plunges as bitcoin back below $87,000 - CoinDesk",
+      "tickers": [
+        "BTC",
+        "XRP"
+      ]
+    },
+    {
+      "title": "Crypto Crash Prediction Comes True: Here\u2019s What\u2019s Next For Bitcoin And Ethereum - TradingView",
+      "tickers": [
+        "ETH",
+        "BTC"
+      ]
+    },
+    {
+      "title": "CRYPTO PUMPS AFTER JEROME POWELL SPEECH, ETH CLOSE TO ATH, ALTS & MEMES PUMP - Decrypt",
+      "tickers": [
+        "ETH",
+        "ALTS",
+        "PUMP"
+      ]
+    },
+    {
+      "title": "Eric Adams\u2019 NYC Token Crashes 80% in Hours, Offering a Stark Lesson in Why Bitcoin Is Different - Bitcoin Magazine",
+      "tickers": [
+        "NYC",
+        "BTC"
+      ]
+    },
+    {
+      "title": "Senator Warren Warns Fed Against Bitcoin Crash Rescue Amid Liquidity Pump Claims - CoinGape",
+      "tickers": [
+        "BTC"
+      ]
+    }
+  ]
+}

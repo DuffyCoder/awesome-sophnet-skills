@@ -42,30 +42,46 @@ Analyze US stocks and cryptocurrencies with 8-dimension analysis, portfolio mana
 - 🆕 **Fast Mode** — `--fast` skips slow analyses (insider, news)
 - 🆕 **Improved Performance** — `--no-insider` for faster runs
 
+## Python Runtime (uv)
+
+**CRITICAL: All Python execution in this skill MUST use `uv run --project .` from the skill directory. NEVER use bare `python3`, `python`, or `pip install` directly — the required packages (yfinance, pandas, etc.) are ONLY available inside the uv virtual environment defined by this skill's `pyproject.toml`. Direct `python3` will fail with ModuleNotFoundError or externally-managed-environment errors.**
+
+Before first use, prepare the environment:
+
+```bash
+bash scripts/ensure_uv_env.sh
+```
+
+Run any script with:
+
+```bash
+cd "$SKILL_DIR" && uv run --project . python <script>
+```
+
 ## Quick Commands
 
 ### Stock Analysis
 ```bash
 # Basic analysis
-uv run {baseDir}/scripts/analyze_stock.py AAPL
+cd "$SKILL_DIR" && uv run --project . python scripts/analyze_stock.py AAPL
 
 # Fast mode (skips insider trading & breaking news)
-uv run {baseDir}/scripts/analyze_stock.py AAPL --fast
+cd "$SKILL_DIR" && uv run --project . python scripts/analyze_stock.py AAPL --fast
 
 # Compare multiple
-uv run {baseDir}/scripts/analyze_stock.py AAPL MSFT GOOGL
+cd "$SKILL_DIR" && uv run --project . python scripts/analyze_stock.py AAPL MSFT GOOGL
 
 # Crypto
-uv run {baseDir}/scripts/analyze_stock.py BTC-USD ETH-USD
+cd "$SKILL_DIR" && uv run --project . python scripts/analyze_stock.py BTC-USD ETH-USD
 ```
 
 ### Dividend Analysis (NEW v6.0)
 ```bash
 # Analyze dividends
-uv run {baseDir}/scripts/dividends.py JNJ
+cd "$SKILL_DIR" && uv run --project . python scripts/dividends.py JNJ
 
 # Compare dividend stocks
-uv run {baseDir}/scripts/dividends.py JNJ PG KO MCD --output json
+cd "$SKILL_DIR" && uv run --project . python scripts/dividends.py JNJ PG KO MCD --output json
 ```
 
 **Dividend Metrics:**
@@ -79,26 +95,26 @@ uv run {baseDir}/scripts/dividends.py JNJ PG KO MCD --output json
 ### Watchlist + Alerts (NEW v6.0)
 ```bash
 # Add to watchlist
-uv run {baseDir}/scripts/watchlist.py add AAPL
+cd "$SKILL_DIR" && uv run --project . python scripts/watchlist.py add AAPL
 
 # With price target alert
-uv run {baseDir}/scripts/watchlist.py add AAPL --target 200
+cd "$SKILL_DIR" && uv run --project . python scripts/watchlist.py add AAPL --target 200
 
 # With stop loss alert
-uv run {baseDir}/scripts/watchlist.py add AAPL --stop 150
+cd "$SKILL_DIR" && uv run --project . python scripts/watchlist.py add AAPL --stop 150
 
 # Alert on signal change (BUY→SELL)
-uv run {baseDir}/scripts/watchlist.py add AAPL --alert-on signal
+cd "$SKILL_DIR" && uv run --project . python scripts/watchlist.py add AAPL --alert-on signal
 
 # View watchlist
-uv run {baseDir}/scripts/watchlist.py list
+cd "$SKILL_DIR" && uv run --project . python scripts/watchlist.py list
 
 # Check for triggered alerts
-uv run {baseDir}/scripts/watchlist.py check
-uv run {baseDir}/scripts/watchlist.py check --notify  # Telegram format
+cd "$SKILL_DIR" && uv run --project . python scripts/watchlist.py check
+cd "$SKILL_DIR" && uv run --project . python scripts/watchlist.py check --notify  # Telegram format
 
 # Remove from watchlist
-uv run {baseDir}/scripts/watchlist.py remove AAPL
+cd "$SKILL_DIR" && uv run --project . python scripts/watchlist.py remove AAPL
 ```
 
 **Alert Types:**
@@ -109,29 +125,29 @@ uv run {baseDir}/scripts/watchlist.py remove AAPL
 ### Portfolio Management
 ```bash
 # Create portfolio
-uv run {baseDir}/scripts/portfolio.py create "Tech Portfolio"
+cd "$SKILL_DIR" && uv run --project . python scripts/portfolio.py create "Tech Portfolio"
 
 # Add assets
-uv run {baseDir}/scripts/portfolio.py add AAPL --quantity 100 --cost 150
-uv run {baseDir}/scripts/portfolio.py add BTC-USD --quantity 0.5 --cost 40000
+cd "$SKILL_DIR" && uv run --project . python scripts/portfolio.py add AAPL --quantity 100 --cost 150
+cd "$SKILL_DIR" && uv run --project . python scripts/portfolio.py add BTC-USD --quantity 0.5 --cost 40000
 
 # View portfolio
-uv run {baseDir}/scripts/portfolio.py show
+cd "$SKILL_DIR" && uv run --project . python scripts/portfolio.py show
 
 # Analyze with period returns
-uv run {baseDir}/scripts/analyze_stock.py --portfolio "Tech Portfolio" --period weekly
+cd "$SKILL_DIR" && uv run --project . python scripts/analyze_stock.py --portfolio "Tech Portfolio" --period weekly
 ```
 
 ### 🔥 Hot Scanner (NEW v6.1)
 ```bash
 # Full scan - find what's trending NOW
-python3 {baseDir}/scripts/hot_scanner.py
+cd "$SKILL_DIR" && uv run --project . python scripts/hot_scanner.py
 
 # Fast scan (skip social media)
-python3 {baseDir}/scripts/hot_scanner.py --no-social
+cd "$SKILL_DIR" && uv run --project . python scripts/hot_scanner.py --no-social
 
 # JSON output for automation
-python3 {baseDir}/scripts/hot_scanner.py --json
+cd "$SKILL_DIR" && uv run --project . python scripts/hot_scanner.py --json
 ```
 
 **Data Sources:**
@@ -155,7 +171,7 @@ python3 {baseDir}/scripts/hot_scanner.py --json
 ### 🔮 Rumor Scanner (NEW v6.2)
 ```bash
 # Find early signals, M&A rumors, insider activity
-python3 {baseDir}/scripts/rumor_scanner.py
+cd "$SKILL_DIR" && uv run --project . python scripts/rumor_scanner.py
 ```
 
 **What it finds:**
