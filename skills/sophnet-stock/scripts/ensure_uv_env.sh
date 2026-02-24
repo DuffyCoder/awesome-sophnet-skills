@@ -56,7 +56,7 @@ need_sync=false
 
 if [[ "$FORCE_SYNC" == true || ! -x "$VENV_PYTHON" ]]; then
   need_sync=true
-elif ! "$VENV_PYTHON" -c 'import yfinance, pandas, feedparser' >/dev/null 2>&1; then
+elif ! "$VENV_PYTHON" -c 'import yfinance, pandas, feedparser, fear_and_greed, edgar' >/dev/null 2>&1; then
   need_sync=true
 fi
 
