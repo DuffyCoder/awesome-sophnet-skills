@@ -61,10 +61,16 @@ def detect_faces(image_path):
     }
     mime_type = mime_types.get(ext, 'image/jpeg')
     
-    with open(image_path, 'rb') as f:
-        files = {'file': (os.path.basename(image_path), f, mime_type)}
-        headers = {"Authorization": f"Bearer {soph_api_key}"}
-        response = requests.post(FACE_API_URL, files=files, headers=headers, timeout=30)
+    try:
+        with open(image_path, 'rb') as f:
+            files = {'file': (os.path.basename(image_path), f, mime_type)}
+            headers = {"Authorization": f"Bearer {soph_api_key}"}
+            # 设置较短的超时时间，避免Node.js环境中的超时溢出
+            response = requests.post(FACE_API_URL, files=files, headers=headers, timeout=90)
+    except requests.exceptions.Timeout:
+        raise RuntimeError(f"API请求超时: 图片 {image_path} 处理时间过长")
+    except requests.exceptions.RequestException as e:
+        raise RuntimeError(f"API请求异常: {str(e)}")
     
     if response.status_code != 200:
         raise RuntimeError(f"API请求失败: {response.status_code} - {response.text[:200]}")
