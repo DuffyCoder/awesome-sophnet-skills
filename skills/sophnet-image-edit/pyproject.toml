@@ -1,0 +1,9 @@
+[project]
+name = "sophnet-image-edit"
+version = "1.0.0"
+description = "SophNet image editing (image-to-image) with task polling"
+requires-python = ">=3.8"
+dependencies = [
+    "requests>=2.28.0",
+    "sophnet-tools>=0.0.1",
+]

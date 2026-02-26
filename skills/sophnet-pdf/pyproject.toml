@@ -10,4 +10,5 @@ dependencies = [
   "pdf2image>=1.17.0",
   "reportlab>=4.2.0",
   "pymupdf>=1.26.7",
+  "sophnet-tools>=0.0.1",
 ]

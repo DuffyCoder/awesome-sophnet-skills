@@ -8,11 +8,11 @@ metadata:
 # SophNet Image Edit
 
 ## Overview
-Edit existing images with SophNet shell scripts that handle task polling and structured output.
+Edit existing images with Python scripts that handle task polling and structured output.
 
 Script responsibilities:
-- `edit_image.sh`: core API caller and polling loop, outputs `INPUT_IMAGE_COUNT`, `TASK_ID`, `STATUS`, and `IMAGE_URL`.
-- `edit_and_preview.sh`: wrapper for local use, calls `edit_image.sh`, downloads first result, adds `PREVIEW_PATH`.
+- `edit_image.py`: core API caller and polling loop, outputs `INPUT_IMAGE_COUNT`, `TASK_ID`, `STATUS`, and `IMAGE_URL`.
+- `edit_and_preview.sh`: wrapper for local use, calls `edit_image.py`, downloads first result, adds `PREVIEW_PATH`.
 
 ## When to Use
 - User asks to edit or transform existing images with Sophnet.
@@ -34,13 +34,12 @@ Typical log pattern:
 Path rules:
 - `--image` accepts URL, data URI, or local file path.
 - Local file paths are auto-converted to data URI by the script.
-- The script submits request JSON via a temporary payload file (`curl --data-binary @file`) to avoid command-line argument length limits for large images.
 - For multi-image tasks, pass every image explicitly and in required order.
 
 ## Multi-Image Rules
 1. Keep source image order stable and explicit.
 2. Bind prompt language to order (image-1, image-2, image-3...).
-3. Do not drop “reference” images; pass all images used by the prompt.
+3. Do not drop "reference" images; pass all images used by the prompt.
 4. Verify script output `INPUT_IMAGE_COUNT` equals expected image count before trusting results.
 
 Recommended prompt pattern for multi-image tasks:
@@ -51,11 +50,11 @@ Recommended prompt pattern for multi-image tasks:
 | --- | --- |
 | Edit with one source | `bash {baseDir}/scripts/edit_and_preview.sh --prompt "..." --image "https://example.com/source.jpg"` |
 | Edit with two sources (ordered) | `bash {baseDir}/scripts/edit_and_preview.sh --prompt "图1作为底图，将图2主体放入图1左下角" --image "media/inbound/images/img1.jpg" --image "media/inbound/images/img2.jpg"` |
-| Style transfer across two images | `bash {baseDir}/scripts/edit_image.sh --prompt "使用图1的画风渲染图2内容" --image "/abs/path/style.jpg" --image "/abs/path/content.jpg"` |
-| Many images via CSV | `bash {baseDir}/scripts/edit_image.sh --prompt "..." --images "media/inbound/images/a.jpg,media/inbound/images/b.jpg,https://example.com/c.jpg"` |
-| Many images via list file | `bash {baseDir}/scripts/edit_image.sh --prompt "..." --images-file "/tmp/image-list.txt"` |
-| Validate image count only | `bash {baseDir}/scripts/edit_image.sh --prompt "..." --images-file "/tmp/image-list.txt" --dry-run` |
-| Show options | `bash {baseDir}/scripts/edit_image.sh --help` |
+| Style transfer across two images | `uv run --project {baseDir} python {baseDir}/scripts/edit_image.py --prompt "使用图1的画风渲染图2内容" --image "/abs/path/style.jpg" --image "/abs/path/content.jpg"` |
+| Many images via CSV | `uv run --project {baseDir} python {baseDir}/scripts/edit_image.py --prompt "..." --images "media/inbound/images/a.jpg,media/inbound/images/b.jpg,https://example.com/c.jpg"` |
+| Many images via list file | `uv run --project {baseDir} python {baseDir}/scripts/edit_image.py --prompt "..." --images-file "/tmp/image-list.txt"` |
+| Validate image count only | `uv run --project {baseDir} python {baseDir}/scripts/edit_image.py --prompt "..." --images-file "/tmp/image-list.txt" --dry-run` |
+| Show options | `uv run --project {baseDir} python {baseDir}/scripts/edit_image.py --help` |
 
 Notes:
 - `--dry-run` does not require API key and is for input-count verification only.
@@ -70,14 +69,13 @@ https://example.com/style.jpg
 ```
 
 ## Implementation
-1. Ensure `SOPH_API_KEY` is available. If missing, use `sophnet-key`.
-2. Resolve all uploaded image paths from Media Understanding logs.
-3. If this edit step follows `sophnet-image-generate`, prefer upstream `IMAGE_URL` for handoff; use `PREVIEW_PATH` only when local-file input is explicitly intended.
-4. Build prompt with explicit image order semantics.
-5. Run script with one `--image` per image, or `--images`, or `--images-file`.
-6. For multi-image tasks, run once with `--dry-run` and confirm `INPUT_IMAGE_COUNT` matches intended image count.
-7. Parse `TASK_ID`, `STATUS`, and `IMAGE_URL` outputs.
-8. Use `PREVIEW_PATH` when present.
+1. Resolve all uploaded image paths from Media Understanding logs.
+2. If this edit step follows `sophnet-image-generate`, prefer upstream `IMAGE_URL` for handoff; use `PREVIEW_PATH` only when local-file input is explicitly intended.
+3. Build prompt with explicit image order semantics.
+4. Run script with one `--image` per image, or `--images`, or `--images-file`.
+5. For multi-image tasks, run once with `--dry-run` and confirm `INPUT_IMAGE_COUNT` matches intended image count.
+6. Parse `TASK_ID`, `STATUS`, and `IMAGE_URL` outputs.
+7. Use `PREVIEW_PATH` when present.
 
 API payload shape:
 - `model`: `Qwen-Image-Edit-2509`
@@ -92,4 +90,3 @@ API payload shape:
 - Ignoring `INPUT_IMAGE_COUNT` mismatch.
 - Using non-existent local paths.
 - In generate→edit workflows, defaulting to `PREVIEW_PATH` instead of `IMAGE_URL` without reason.
-- Missing key setup: `Error: No API key provided.`

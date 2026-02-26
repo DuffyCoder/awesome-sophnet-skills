@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
 #
 # Edit image and download the first result for preview.
-# This wrapper script calls edit_image.sh and downloads the result.
+# Wrapper: calls edit_image.py via uv, downloads first result.
 #
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-EDIT_SCRIPT="${SCRIPT_DIR}/edit_image.sh"
+SKILL_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+EDIT_SCRIPT="${SCRIPT_DIR}/edit_image.py"
 
 if [[ ! -f "$EDIT_SCRIPT" ]]; then
-  echo "Error: edit_image.sh not found at ${EDIT_SCRIPT}" >&2
+  echo "Error: edit_image.py not found at ${EDIT_SCRIPT}" >&2
   exit 1
 fi
 
@@ -21,12 +22,12 @@ fi
 
 for arg in "$@"; do
   if [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
-    bash "$EDIT_SCRIPT" --help
+    uv run --project "$SKILL_DIR" python "$EDIT_SCRIPT" --help
     exit 0
   fi
 done
 
-if ! output="$(bash "$EDIT_SCRIPT" "$@" 2>&1)"; then
+if ! output="$(uv run --project "$SKILL_DIR" python "$EDIT_SCRIPT" "$@" 2>&1)"; then
   echo "$output" >&2
   exit 1
 fi
