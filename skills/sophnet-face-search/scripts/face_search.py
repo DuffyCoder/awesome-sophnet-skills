@@ -10,7 +10,6 @@ import os
 import sys
 import json
 import argparse
-import cv2
 import numpy as np
 from pathlib import Path
 import sophnet_tools
@@ -34,10 +33,6 @@ def detect_faces(image_path):
     """调用API检测人脸"""
     if not os.path.exists(image_path):
         raise FileNotFoundError(f"图片文件不存在: {image_path}")
-    
-    ost_img = cv2.imread(image_path)
-    if ost_img is None:
-        raise ValueError(f"无法读取图片文件: {image_path}")
     
     # 确定图片的 MIME 类型
     input_file = Path(image_path)
@@ -66,7 +61,7 @@ def detect_faces(image_path):
     if response.status_code != 200:
         raise RuntimeError(f"API请求失败: {response.status_code} - {response.text[:200]}")
     
-    return ost_img, response.json().get('result', {})
+    return response.json().get('result', {})
 
 def get_largest_face(faces):
     """从检测到的人脸中找出尺寸最大的人脸"""
@@ -86,22 +81,6 @@ def get_largest_face(faces):
                 largest_face = face
     
     return largest_face
-
-def draw_face_box_opencv(ost_img, image_path, face):
-    """在图片上绘制人脸边界框"""
-    input_file = Path(image_path)
-    output_file = input_file.with_name(f"{input_file.stem}_face{input_file.suffix}")
-    output_file = output_file.with_suffix('.jpg')
-    output_path = str(output_file)
-    
-    if face:
-        box = face.get('box', [])
-        if len(box) >= 4:
-            x1, y1, x2, y2 = int(box[0]), int(box[1]), int(box[2]), int(box[3])
-            cv2.rectangle(ost_img, (x1, y1), (x2, y2), (0, 255, 0), 3)
-    
-    cv2.imwrite(output_path, ost_img)
-    return output_path
 
 def save_embedding(face, json_path):
     """保存人脸embedding到json文件"""
@@ -139,7 +118,7 @@ def get_baseface_embedding(image_path, det_thr=DEFAULT_QUERY_THRESHOLD, output_d
     input_file_name = str(input_file)
     
     try:
-        ost_image, result = detect_faces(input_file_name)
+        result = detect_faces(input_file_name)
         faces_count = result.get("faces_count", 0)
         faces = result.get("output", [])
         faces = [face for face in faces if face.get('det_score', 0) >= det_thr]
@@ -148,8 +127,6 @@ def get_baseface_embedding(image_path, det_thr=DEFAULT_QUERY_THRESHOLD, output_d
         if faces_count > 0:
             largest_face = get_largest_face(faces)
             if largest_face:
-                face_image_path = draw_face_box_opencv(ost_image, input_file_name, largest_face)
-                
                 # 保存embedding
                 if output_dir:
                     output_dir = Path(output_dir)
@@ -160,13 +137,13 @@ def get_baseface_embedding(image_path, det_thr=DEFAULT_QUERY_THRESHOLD, output_d
                     json_path = json_path.with_name(f"{json_path.stem}_embedding.json")
                 
                 save_embedding(largest_face, str(json_path))
-                return str(json_path), str(face_image_path)
+                return str(json_path)
         
-        return None, None
+        return None
     
     except Exception as e:
         print(f"错误: {e}", file=sys.stderr)
-        return None, None
+        return None
 
 def get_searchface_embeddings(image_paths, det_thr=DEFAULT_SEARCH_THRESHOLD, output_dir=None):
     """获取搜索图片列表的所有人脸embedding"""
@@ -193,7 +170,7 @@ def get_searchface_embeddings(image_paths, det_thr=DEFAULT_SEARCH_THRESHOLD, out
                 continue
             
             print(f"开始处理图片: {image_path}")
-            ost_image, result = detect_faces(image_path)
+            result = detect_faces(image_path)
             faces_count = result.get("faces_count", 0)
             faces = result.get("output", [])
             faces = [face for face in faces if face.get('det_score', 0) >= det_thr]
@@ -281,8 +258,8 @@ def main():
     parser = argparse.ArgumentParser(
         description="人脸检索工具 - 在图片库中搜索相似人脸"
     )
-    parser.add_argument('--image_path', required=True, help='查询图片路径')
-    parser.add_argument('--search_image_path', required=True, help='搜索图片文件夹路径')
+    parser.add_argument('--image_path', default="/home/zhijuhuang/workdir/awesome-sophnet-skills/skills/sophnet-face-search/test_face/base.png",  help='查询图片路径')
+    parser.add_argument('--search_image_path',default="/home/zhijuhuang/workdir/awesome-sophnet-skills/skills/sophnet-face-search/test_face",  help='搜索图片文件夹路径')
     parser.add_argument('--det-thr', type=float, default=DEFAULT_SEARCH_THRESHOLD,
                         help=f'检测阈值 (默认: {DEFAULT_SEARCH_THRESHOLD})')
     parser.add_argument('--threshold', type=float, default=DEFAULT_SIMILARITY_THRESHOLD,
@@ -292,14 +269,13 @@ def main():
     
     # 步骤1: 提取查询人脸
     print(f"正在分析查询图片: {args.image_path}")
-    base_json_path, face_image_path = get_baseface_embedding(args.image_path, args.det_thr)
+    base_json_path = get_baseface_embedding(args.image_path, args.det_thr)
     
     if not base_json_path:
         print("错误: 未在查询图片中检测到人脸", file=sys.stderr)
         sys.exit(1)
     
     print(f"查询人脸embedding已保存: {base_json_path}")
-    print(f"要搜索的人脸预览: MEDIA:{face_image_path}")
     
     # 步骤2: 扫描搜索目录
     image_list = list_images_pathlib(args.search_image_path)

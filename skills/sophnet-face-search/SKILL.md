@@ -1,11 +1,11 @@
 ---
 name: sophnet-face-search
-description: Search for similar faces in image directories using face detection and embedding comparison. Use when users want to find photos containing a specific person, search for similar faces across image collections, or identify matching faces in photo libraries. Supports automatic path extraction from logs (patterns like "Resolved relative path"), configurable similarity thresholds, and visual preview of query and result faces.
+description: Search for similar faces in image directories using face detection and embedding comparison. Use when users want to find photos containing a specific person, search for similar faces across image collections, or identify matching faces in photo libraries. Supports automatic path extraction from logs (patterns like "Resolved relative path") and configurable similarity thresholds.
 ---
 
 # Face Search
 
-Search for similar faces in image directories using Sophnet's face detection API.
+Search for similar faces in image directories using SophNet's face detection API.
 
 ## Processing Mode
 
@@ -17,7 +17,7 @@ Search for similar faces in image directories using Sophnet's face detection API
 
 ## Prerequisites
 
-- Python packages: opencv-python-headless, numpy, requests, sophnet-tools
+- Python packages: numpy, requests, sophnet-tools
 
 ## Usage
 
@@ -27,7 +27,7 @@ When a user wants to search for faces:
 2. **Run the search** using uv from /tmp to avoid workspace pyproject.toml conflicts:
 
 ```bash
-uv run --with opencv-python-headless --with numpy --with requests --with sophnet-tools \
+uv run --with numpy --with requests --with sophnet-tools \
   python {baseDir}/scripts/face_search.py \
   --image_path /absolute/path/to/query.jpg \
   --search_image_path /absolute/path/to/search/folder \
@@ -44,28 +44,25 @@ uv run --with opencv-python-headless --with numpy --with requests --with sophnet
 ## Output
 
 The script outputs:
-1. Query face preview with bounding box: `MEDIA:/path/to/query_face.jpg`
+1. Query face analysis message with image path: `MEDIA:/path/to/query.jpg`
 2. List of matching images with similarity scores
 3. Each result shows: `MEDIA:/absolute/path/to/result.jpg`
 
 **After the search completes, format the output as follows:**
 
 ```
-查询人脸预览：
-[Use read tool to display the query face (*_face.jpg)]
+输入图片：
+/path/to/query.jpg
 
 搜索到 N 个相似人脸：
-[Use read tool to display each matching result image]
-
-搜索到的图片列表：
-/absolute/path/to/result1.jpg
-/absolute/path/to/result2.png
-/absolute/path/to/result3.jpg
+/absolute/path/to/result1.jpg (相似度: XX%)
+/absolute/path/to/result2.png (相似度: XX%)
+/absolute/path/to/result3.jpg (相似度: XX%)
 ```
 
 **Important:**
 - Always show absolute paths in the final list
-- Use `read` tool to visually display both query face and all matching results
+- No image previews are displayed - only text results with similarity scores and paths
 - Extract absolute paths from the script's MEDIA: output lines
 
 ## Path Extraction
@@ -82,11 +79,14 @@ Extract the absolute path (right side of `->`) for use with the script.
 User: "Find photos with this person in my vacation folder"
 
 1. Extract query image path from logs (or use most recent image from media/inbound/images)
-2. Run: `uv run --with opencv-python-headless --with numpy --with requests --with sophnet-tools python /path/to/face_search.py --image_path /path/to/query.jpg --search_image_path /path/to/vacation --threshold 0.4`
-3. **Display the results with images:**
-   - Use `read` tool to display the query face preview (the `*_face.jpg` file)
-   - Use `read` tool to display each matching result image
-   - This allows users to visually verify the matches
+2. Run: `uv run --with numpy --with requests --with sophnet-tools python /path/to/face_search.py --image_path /path/to/query.jpg --search_image_path /path/to/vacation --threshold 0.4`
+3. **Display the results:**
+   - Show text results with similarity scores and absolute paths
+   - Format like:
+     ```
+     /path/to/result1.jpg (相似度: 57.61%)
+     /path/to/result2.jpg (相似度: 54.94%)
+     ```
 
 ## Notes
 
