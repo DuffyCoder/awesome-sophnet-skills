@@ -7,4 +7,5 @@ dependencies = [
   "defusedxml>=0.7.1",
   "lxml>=5.2.0",
   "openpyxl>=3.1.0",
+  "sophnet-tools>=0.0.1",
 ]

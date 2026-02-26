@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
 #
-# Generate image and download for preview
-# This wrapper script calls generate_image.sh and downloads the result
+# Generate image and download for preview.
+# Wrapper: calls generate_image.py via uv, downloads first result.
 #
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GEN_SCRIPT="${SCRIPT_DIR}/generate_image.sh"
+SKILL_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+GEN_SCRIPT="${SCRIPT_DIR}/generate_image.py"
 
 if [[ ! -f "$GEN_SCRIPT" ]]; then
-  echo "Error: generate_image.sh not found at ${GEN_SCRIPT}" >&2
+  echo "Error: generate_image.py not found at ${GEN_SCRIPT}" >&2
   exit 1
 fi
 
@@ -21,21 +22,18 @@ fi
 
 for arg in "$@"; do
   if [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
-    bash "$GEN_SCRIPT" --help
+    uv run --project "$SKILL_DIR" python "$GEN_SCRIPT" --help
     exit 0
   fi
 done
 
-# Run the image generation script with all arguments
-if ! output="$(bash "$GEN_SCRIPT" "$@" 2>&1)"; then
+if ! output="$(uv run --project "$SKILL_DIR" python "$GEN_SCRIPT" "$@" 2>&1)"; then
   echo "$output" >&2
   exit 1
 fi
 
-# Echo the original output
 echo "$output"
 
-# Extract the image URL
 image_url="$(printf '%s\n' "$output" | awk '/^IMAGE_URL=/{print substr($0,11); exit}')"
 
 if [[ -z "$image_url" ]]; then
@@ -43,7 +41,6 @@ if [[ -z "$image_url" ]]; then
   exit 1
 fi
 
-# Generate a simple filename from task ID
 task_id="$(printf '%s\n' "$output" | awk '/^TASK_ID=/{print substr($0,9); exit}')"
 if [[ -z "$task_id" ]]; then
   task_id="$(date +%s)"
@@ -60,7 +57,6 @@ case "$ext" in
 esac
 temp_file="$(mktemp "/tmp/generated_${task_id}_XXXXXX.${ext}")"
 
-# Download the image
 if curl -fsSL "$image_url" -o "$temp_file"; then
   echo "PREVIEW_PATH=${temp_file}"
 else
