@@ -27,7 +27,7 @@ When a user wants to search for faces:
 2. **Run the search** using uv from /tmp to avoid workspace pyproject.toml conflicts:
 
 ```bash
-uv run --with opencv-python-headless --with numpy --with requests \
+uv run --with opencv-python-headless --with numpy --with requests --with sophnet-tools \
   python {baseDir}/scripts/face_search.py \
   --image_path /absolute/path/to/query.jpg \
   --search_image_path /absolute/path/to/search/folder \
@@ -82,7 +82,7 @@ Extract the absolute path (right side of `->`) for use with the script.
 User: "Find photos with this person in my vacation folder"
 
 1. Extract query image path from logs (or use most recent image from media/inbound/images)
-2. Run: `uv run --with opencv-python-headless --with numpy --with requests python /path/to/face_search.py --image_path /path/to/query.jpg --search_image_path /path/to/vacation --threshold 0.4`
+2. Run: `uv run --with opencv-python-headless --with numpy --with requests --with sophnet-tools python /path/to/face_search.py --image_path /path/to/query.jpg --search_image_path /path/to/vacation --threshold 0.4`
 3. **Display the results with images:**
    - Use `read` tool to display the query face preview (the `*_face.jpg` file)
    - Use `read` tool to display each matching result image
