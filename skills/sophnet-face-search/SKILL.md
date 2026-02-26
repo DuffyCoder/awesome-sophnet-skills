@@ -9,16 +9,14 @@ Search for similar faces in image directories using Sophnet's face detection API
 
 ## Prerequisites
 
-- Sophnet API key (automatically fetched via sophnet-key skill)
-- Python packages: opencv-python-headless, numpy, requests
+- Python packages: opencv-python-headless, numpy, requests, sophnet-tools
 
 ## Usage
 
 When a user wants to search for faces:
 
-1. **Call sophnet-key skill first** to ensure SOPH_API_KEY is set
-2. **Extract image path** from user input or recent logs (look for patterns like `Resolved relative path: "media/inbound/images/xxx.jpg"`)
-3. **Run the search** using uv from /tmp to avoid workspace pyproject.toml conflicts:
+1. **Extract image path** from user input or recent logs (look for patterns like `Resolved relative path: "media/inbound/images/xxx.jpg"`)
+2. **Run the search** using uv from /tmp to avoid workspace pyproject.toml conflicts:
 
 ```bash
 uv run --with opencv-python-headless --with numpy --with requests \
@@ -75,10 +73,9 @@ Extract the absolute path (right side of `->`) for use with the script.
 
 User: "Find photos with this person in my vacation folder"
 
-1. Call sophnet-key skill to get API key
-2. Extract query image path from logs (or use most recent image from media/inbound/images)
-3. Run: `uv run --with opencv-python-headless --with numpy --with requests python /path/to/face_search.py --image_path /path/to/query.jpg --search_image_path /path/to/vacation --threshold 0.4`
-4. **Display the results with images:**
+1. Extract query image path from logs (or use most recent image from media/inbound/images)
+2. Run: `uv run --with opencv-python-headless --with numpy --with requests python /path/to/face_search.py --image_path /path/to/query.jpg --search_image_path /path/to/vacation --threshold 0.4`
+3. **Display the results with images:**
    - Use `read` tool to display the query face preview (the `*_face.jpg` file)
    - Use `read` tool to display each matching result image
    - This allows users to visually verify the matches

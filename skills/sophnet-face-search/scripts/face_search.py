@@ -13,6 +13,7 @@ import argparse
 import cv2
 import numpy as np
 from pathlib import Path
+import sophnet_tools
 
 # API配置
 FACE_API_URL = "https://www.sophnet.com/api/open-apis/projects/detect_and_embed"
@@ -22,19 +23,9 @@ DEFAULT_QUERY_THRESHOLD = 0.7
 DEFAULT_SEARCH_THRESHOLD = 0.5
 DEFAULT_SIMILARITY_THRESHOLD = 0.4
 
-def get_soph_api_key():
-    """获取sophnet API密钥"""
-    api_key = os.environ.get("SOPH_API_KEY")
-    if api_key:
-        return api_key
-    else:
-        raise RuntimeError(
-            "未找到sophnet API密钥。请设置环境变量 SOPH_API_KEY"
-        )
-
 # 全局API密钥
 try:
-    soph_api_key = get_soph_api_key()
+    soph_api_key = sophnet_tools.get_api_key()
 except RuntimeError as e:
     print(f"错误: {e}", file=sys.stderr)
     sys.exit(1)
