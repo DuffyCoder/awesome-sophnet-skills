@@ -13,10 +13,11 @@ import base64
 import mimetypes
 import json
 import requests
+import sophnet_tools
 
 # API Configuration
 API_URL = "https://www.sophnet.com/api/open-apis/projects/easyllms/image-ocr"
-API_KEY = os.environ.get("SOPH_API_KEY")
+API_KEY = sophnet_tools.get_api_key()
 
 if not API_KEY:
     print("Error: SOPH_API_KEY environment variable not set.", file=sys.stderr)
