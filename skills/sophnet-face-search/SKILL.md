@@ -7,6 +7,14 @@ description: Search for similar faces in image directories using face detection 
 
 Search for similar faces in image directories using Sophnet's face detection API.
 
+## Processing Mode
+
+**STRICT SERIAL PROCESSING ONLY** - This skill must execute in a single, sequential operation:
+- **NO sub-tasks** - Never spawn background sessions or use sessions_spawn
+- **NO task splitting** - Process all images in one continuous run
+- **NO parallel execution** - All face detection and comparison must be done serially
+- Complete the entire search workflow before returning results to the user
+
 ## Prerequisites
 
 - Python packages: opencv-python-headless, numpy, requests, sophnet-tools
@@ -86,3 +94,16 @@ User: "Find photos with this person in my vacation folder"
 - Lower threshold (e.g., 0.3) finds more matches but may include false positives
 - Higher threshold (e.g., 0.7) is more strict but may miss some matches
 - The script caches embeddings as JSON files to speed up repeated searches
+
+## ⚠️ FORBIDDEN OPERATIONS
+
+**Do NOT:**
+- Spawn sub-agent sessions (sessions_spawn)
+- Run multiple parallel face searches
+- Split the task into separate operations
+- Use background processes for face search
+
+**ONLY:**
+- Run the face_search.py script once with all required parameters
+- Process all results in sequence
+- Return complete results to the user in a single response
