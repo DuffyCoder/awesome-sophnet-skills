@@ -68,13 +68,44 @@ media/inbound/images/object.png
 https://example.com/style.jpg
 ```
 
+## Script Output Fields
+
+The script outputs structured key=value lines. Parse all of them:
+
+| Field | Description |
+| --- | --- |
+| `INPUT_IMAGE_COUNT` | Number of source images passed to the API |
+| `TASK_ID` | API task identifier |
+| `STATUS` | `succeeded` or `failed` |
+| `OUTPUT_COUNT` | Number of result images |
+| `IMAGE_URL` | Publicly accessible signed URL for each result image |
+| `PREVIEW_PATH` | Local file path (only when OSS re-upload failed as fallback) |
+
+## Presenting Results to Users
+
+After a successful edit, present the results with context -- not just a bare URL. Include:
+
+1. What was done: mention the edit instruction / style applied.
+2. Input/output image counts.
+3. The result image URL(s): provide the `IMAGE_URL` so the user can view/download.
+4. If `PREVIEW_PATH` is present, mention the local file path.
+
+Example response pattern:
+```
+图片编辑完成！
+
+- 编辑指令：把图片变成水彩画风格
+- 输入图片数：1
+- 结果图片：<IMAGE_URL>
+```
+
 ## Implementation
 1. Resolve all uploaded image paths from Media Understanding logs.
 2. If this edit step follows `sophnet-image-generate`, prefer upstream `IMAGE_URL` for handoff; use `PREVIEW_PATH` only when local-file input is explicitly intended.
 3. Build prompt with explicit image order semantics.
 4. Run script with one `--image` per image, or `--images`, or `--images-file`.
 5. For multi-image tasks, run once with `--dry-run` and confirm `INPUT_IMAGE_COUNT` matches intended image count.
-6. Parse `TASK_ID`, `STATUS`, and `IMAGE_URL` outputs.
+6. Parse ALL output fields (see table above) and present them to the user.
 7. Use `PREVIEW_PATH` when present.
 
 API payload shape:
@@ -90,3 +121,4 @@ API payload shape:
 - Ignoring `INPUT_IMAGE_COUNT` mismatch.
 - Using non-existent local paths.
 - In generate→edit workflows, defaulting to `PREVIEW_PATH` instead of `IMAGE_URL` without reason.
+- Only showing a bare URL without context -- always present a summary with edit details.

@@ -6,7 +6,9 @@ Outputs machine-friendly TASK_ID, STATUS, and IMAGE_URL lines.
 
 import argparse
 import json
+import os
 import sys
+import tempfile
 import time
 
 import requests
@@ -111,6 +113,37 @@ def extract_urls(data):
     return urls
 
 
+def reupload_for_signed_url(api_key, raw_url):
+    """Download from raw DashScope URL (using API auth) and re-upload
+    to SophNet OSS to obtain a publicly accessible signed URL.
+    Returns (signed_url, local_path) or (None, None) on failure."""
+    headers = {"Authorization": f"Bearer {api_key}"}
+    try:
+        resp = requests.get(raw_url, headers=headers, timeout=120, stream=True)
+        resp.raise_for_status()
+    except requests.RequestException as e:
+        print(f"Warning: failed to download image: {e}", file=sys.stderr)
+        return None, None
+
+    ext = os.path.splitext(raw_url.split("?")[0])[-1] or ".png"
+    fd, tmp_path = tempfile.mkstemp(suffix=ext, prefix="img_reup_")
+    try:
+        with os.fdopen(fd, "wb") as f:
+            for chunk in resp.iter_content(8192):
+                f.write(chunk)
+    except IOError as e:
+        print(f"Warning: failed to write temp file: {e}", file=sys.stderr)
+        os.unlink(tmp_path)
+        return None, None
+
+    signed_url = sophnet_tools.upload_oss(tmp_path)
+    if not signed_url:
+        print("Warning: upload_oss returned no signed URL, keeping local file", file=sys.stderr)
+        return None, tmp_path
+
+    return signed_url, tmp_path
+
+
 def main():
     parser = argparse.ArgumentParser(description="SophNet image generation")
     parser.add_argument("--prompt", required=True, help="Image prompt")
@@ -142,14 +175,20 @@ def main():
     result = poll_task(api_key, task_id, args.poll_interval, args.max_wait)
     print("STATUS=succeeded")
 
-    urls = extract_urls(result)
-    if not urls:
+    raw_urls = extract_urls(result)
+    if not raw_urls:
         print("Error: url not found in response.", file=sys.stderr)
         print(json.dumps(result, ensure_ascii=False), file=sys.stderr)
         sys.exit(1)
 
-    for u in urls:
-        print(f"IMAGE_URL={u}")
+    for raw_url in raw_urls:
+        signed_url, local_path = reupload_for_signed_url(api_key, raw_url)
+        print(f"IMAGE_URL={signed_url or raw_url}")
+        if local_path:
+            if signed_url:
+                os.unlink(local_path)
+            else:
+                print(f"PREVIEW_PATH={local_path}")
 
 
 if __name__ == "__main__":

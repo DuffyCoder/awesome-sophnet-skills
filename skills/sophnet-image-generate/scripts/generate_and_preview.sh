@@ -3,6 +3,12 @@
 # Generate image and download for preview.
 # Wrapper: calls generate_image.py via uv, downloads first result.
 #
+# Outputs:
+#   TASK_ID=<id>
+#   STATUS=succeeded
+#   IMAGE_URL=<url>        (publicly accessible)
+#   PREVIEW_PATH=<local path>
+#
 
 set -euo pipefail
 
@@ -34,6 +40,14 @@ fi
 
 echo "$output"
 
+# Python already downloads the image; check if PREVIEW_PATH was produced
+preview_path="$(printf '%s\n' "$output" | awk '/^PREVIEW_PATH=/{print substr($0,14); exit}')"
+
+if [[ -n "$preview_path" && -f "$preview_path" ]]; then
+  exit 0
+fi
+
+# Fallback: download via curl if Python didn't produce a local file
 image_url="$(printf '%s\n' "$output" | awk '/^IMAGE_URL=/{print substr($0,11); exit}')"
 
 if [[ -z "$image_url" ]]; then
@@ -42,18 +56,13 @@ if [[ -z "$image_url" ]]; then
 fi
 
 task_id="$(printf '%s\n' "$output" | awk '/^TASK_ID=/{print substr($0,9); exit}')"
-if [[ -z "$task_id" ]]; then
-  task_id="$(date +%s)"
-fi
+: "${task_id:=$(date +%s)}"
 
 path_no_query="${image_url%%\?*}"
 ext="${path_no_query##*.}"
 case "$ext" in
-  jpg|jpeg|png|gif|webp|bmp)
-    ;;
-  *)
-    ext="png"
-    ;;
+  jpg|jpeg|png|gif|webp|bmp) ;;
+  *) ext="png" ;;
 esac
 temp_file="$(mktemp "/tmp/generated_${task_id}_XXXXXX.${ext}")"
 

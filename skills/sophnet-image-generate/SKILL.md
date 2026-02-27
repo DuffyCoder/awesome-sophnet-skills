@@ -34,7 +34,7 @@ Recommended defaults:
 ## Implementation
 1. Run the script with `--prompt`.
 2. Parse output lines by key prefix.
-3. Return `IMAGE_URL` values to the user and use `PREVIEW_PATH` for local image preview when present.
+3. Use `IMAGE_URL` to share with users (publicly accessible). Use `PREVIEW_PATH` for local image preview when present.
 
 ## Common Mistakes
 - Assuming `PREVIEW_PATH` exists when using `generate_image.py`.
