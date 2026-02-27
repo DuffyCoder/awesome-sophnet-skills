@@ -1,12 +1,13 @@
 ---
 name: sophnet-image-ocr
-description: OCR text and table extraction from images using SophNet API. Automatically handles local files and URLs.
+description: OCR text and table extraction from images and PDF using SophNet API. Supports local files and URLs; PDFs are converted page-by-page (low resource), results merged, temp images deleted.
 ---
 
-# Image OCR (SophNet API)
+# Image / PDF OCR (SophNet API)
 
-Extract text and tables from images using the SophNet API.
-Supports local image files and direct URLs, returning Markdown-formatted output.
+Extract text and tables from **images** or **PDF** using the SophNet API.
+Supports local image/PDF files and direct URLs, returning Markdown-formatted output.
+- **PDF**：多页 PDF 按页转成图片（低 DPI 以节省内存），逐页调用 OCR 后合并结果，并自动删除缓存的临时图片。
 
 ## Image Path Resolution
 
@@ -19,15 +20,14 @@ Look for logs like:
 
 ## Quick Start
 
-Run OCR on an image (absolute path):
+Run OCR on an image or PDF:
 ```bash
-uv run {baseDir}/scripts/ocr.py <image-path-or-url>
+uv run {baseDir}/scripts/ocr.py <image-or-pdf-path-or-url>
 ```
 
 This will:
-2. Convert local images to base64 automatically
-3. Call the PaddleOCR-VL API
-4. Output Markdown-formatted text with tables
+- **Image**：Convert local images to base64, call PaddleOCR-VL API, output Markdown.
+- **PDF**：Create a temp dir → render each page to PNG (150 DPI, low resource) → OCR each page → merge text with page markers → delete temp images and temp dir.
 
 ## Usage Examples
 
@@ -37,9 +37,15 @@ uv run {baseDir}/scripts/ocr.py /path/to/image.jpg
 uv run {baseDir}/scripts/ocr.py media/inbound/images/uploaded_image.png
 ```
 
-**URL:**
+**Local PDF (multi-page supported):**
+```bash
+uv run {baseDir}/scripts/ocr.py /path/to/document.pdf
+```
+
+**URL (image or PDF):**
 ```bash
 uv run {baseDir}/scripts/ocr.py https://example.com/image.jpg
+uv run {baseDir}/scripts/ocr.py https://example.com/doc.pdf
 ```
 
 **Custom options:**
@@ -52,7 +58,7 @@ uv run {baseDir}/scripts/ocr.py <image> \
 
 ## Script Options
 
-- `<image-path-or-url>` (required): Local file path or HTTP/HTTPS URL
+- `<image-or-pdf-path-or-url>` (required): Local image/PDF path or HTTP/HTTPS URL
 - `--model` (optional): Model to use. Default: `PaddleOCR-VL-0.9B`
 - `--prettify-markdown` / `--no-prettify-markdown` (optional): Format output as Markdown. Default: enabled
 - `--show-formula-number` / `--no-show-formula-number` (optional): Show formula numbering. Default: disabled
@@ -65,26 +71,37 @@ The script outputs:
 
 ## Workflow
 
+**Image：**
 1. Input validation (file path or URL)
-3. Convert local files to base64 data URLs
-4. Call SophNet OCR API (timeout: 60s)
-5. Parse and return Markdown output
+2. Convert local files to base64 data URLs
+3. Call SophNet OCR API (timeout: 60s)
+4. Parse and return Markdown output
+
+**PDF：**
+1. Detect PDF (by path/URL extension)
+2. Create temp directory；若为 URL 则先下载 PDF 到 temp
+3. 使用 PyMuPDF 按页渲染为 PNG（150 DPI，低内存），逐页：OCR → 追加结果 → 删除该页临时图
+4. 合并各页文本（带「第 N 页」分隔），删除 temp 目录
+5. 输出合并后的 Markdown
 
 ## Agent Usage
 
-When extracting text/tables from images for users:
+When extracting text/tables from images or PDF for users:
 
 1. Run the OCR script:
    ```bash
-   uv run {baseDir}/scripts/ocr.py <image-path>
+   uv run {baseDir}/scripts/ocr.py <image-or-pdf-path>
    ```
 2. Capture the stdout output
 3. Present the extracted text/tables to the user
-4. If the image is a Moltbot-uploaded file, check `media/inbound/images/` for the path
+4. If the file is a Moltbot-uploaded image, check `media/inbound/images/` for the path
+5. PDF 会逐页识别并合并输出，临时图片会在完成后自动删除
 
 ## Common Errors
 
-- `Unsupported file type: ...` → Ensure the file is a valid image format
+- `Unsupported file type: ...` → Ensure the file is a valid image format (PDF 单独支持，不经过此检查)
+- `文件不存在` / 下载 PDF 失败 → 检查路径或 URL 是否可访问
+- `PDF 处理错误` → 确认已安装 pymupdf、PDF 未损坏
 
 ## API Details
 
@@ -92,28 +109,34 @@ When extracting text/tables from images for users:
 **Model:** `PaddleOCR-VL-0.9B`
 **Request timeout:** 60 seconds
 
-## Supported Image Formats
+**PDF 依赖：** 需安装 `pymupdf`（pyproject.toml 已声明）；PDF 按 150 DPI 转图以兼顾清晰度与低内存。
 
-- JPEG/JPG
-- PNG
-- GIF
-- WebP
-- BMP
-- Other MIME types starting with `image/`
+## Supported Input Formats
+
+- **PDF**：本地 `.pdf` 或 URL 指向的 PDF；多页时按页转图（150 DPI）后识别，结果合并，临时图片自动删除
+- **Image**：JPEG/JPG、PNG、GIF、WebP、BMP 及其他 `image/*` MIME 类型
 
 ## Real Example
 
-Command:
+**Image:**
 ```bash
 uv run {baseDir}/scripts/ocr.py /path/to/document_with_tables.jpg
 ```
 
-Output (Markdown):
+**PDF（多页会带页码分隔）：**
+```bash
+uv run {baseDir}/scripts/ocr.py /path/to/report.pdf
+```
+
+Output (Markdown，PDF 多页示例):
 ```markdown
+--- 第 1 页 ---
+
 | Name | Age | Occupation |
 |------|-----|------------|
 | John | 30  | Engineer   |
-| Mary | 25  | Designer   |
+
+--- 第 2 页 ---
 
 This document contains important information about the team structure...
 ```
