@@ -22,12 +22,7 @@ DEFAULT_QUERY_THRESHOLD = 0.7
 DEFAULT_SEARCH_THRESHOLD = 0.5
 DEFAULT_SIMILARITY_THRESHOLD = 0.4
 
-# 全局API密钥
-try:
-    soph_api_key = sophnet_tools.get_api_key()
-except RuntimeError as e:
-    print(f"错误: {e}", file=sys.stderr)
-    sys.exit(1)
+soph_api_key = None
 
 def detect_faces(image_path):
     """调用API检测人脸"""
@@ -266,7 +261,14 @@ def main():
                         help=f'相似度阈值 (默认: {DEFAULT_SIMILARITY_THRESHOLD})')
     
     args = parser.parse_args()
-    
+
+    global soph_api_key
+    try:
+        soph_api_key = sophnet_tools.get_api_key()
+    except RuntimeError as e:
+        print(f"错误: {e}", file=sys.stderr)
+        sys.exit(1)
+
     # 步骤1: 提取查询人脸
     print(f"正在分析查询图片: {args.image_path}")
     base_json_path = get_baseface_embedding(args.image_path, args.det_thr)

@@ -21,13 +21,7 @@ import sophnet_tools
 
 # API Configuration
 API_URL = "https://www.sophnet.com/api/open-apis/projects/easyllms/image-ocr"
-API_KEY = sophnet_tools.get_api_key()
-
-if not API_KEY:
-    print("Error: SOPH_API_KEY environment variable not set.", file=sys.stderr)
-    print("Please set it with: export SOPH_API_KEY='your-key'", file=sys.stderr)
-    print("Or obtain a key using the sophnet-key skill.", file=sys.stderr)
-    sys.exit(1)
+API_KEY = None
 
 
 def image_to_base64(image_path):
@@ -157,10 +151,10 @@ def call_ocr_api(image_url, prettify_markdown=True, show_formula_number=False):
         if response.status_code == 200 :
             return response.json()
         else:
-            print(f"HTTP请求失败，状态码: {response.status_code}, 响应内容: {response.text}")
+            print(f"HTTP请求失败，状态码: {response.status_code}, 响应内容: {response.text}", file=sys.stderr)
             return None
     except requests.exceptions.RequestException as e:
-        print(f"HTTP请求超时: {e}")
+        print(f"HTTP请求超时: {e}", file=sys.stderr)
         return None
         
 def main():
@@ -172,6 +166,14 @@ def main():
         print("  ocr.py https://example.com/image.jpg", file=sys.stderr)
         print("  ocr.py media/inbound/images/uploaded_image.png", file=sys.stderr)
         print("\nFor Moltbot-uploaded images, check media/inbound/images/ in the workspace.", file=sys.stderr)
+        sys.exit(1)
+
+    global API_KEY
+    API_KEY = sophnet_tools.get_api_key()
+    if not API_KEY:
+        print("Error: SOPH_API_KEY environment variable not set.", file=sys.stderr)
+        print("Please set it with: export SOPH_API_KEY='your-key'", file=sys.stderr)
+        print("Or obtain a key using the sophnet-key skill.", file=sys.stderr)
         sys.exit(1)
 
     image_input = sys.argv[1].strip()

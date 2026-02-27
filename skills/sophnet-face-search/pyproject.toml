@@ -1,0 +1,10 @@
+[project]
+name = "sophnet-face-search"
+version = "1.0.0"
+description = "Face search using SophNet face detection and embedding API"
+requires-python = ">=3.8"
+dependencies = [
+    "numpy>=1.24.0",
+    "requests>=2.28.0",
+    "sophnet-tools>=0.0.1",
+]
