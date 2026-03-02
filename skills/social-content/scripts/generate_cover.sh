@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 #
-# Generate image via OpenRouter API.
+# Generate image via SophNet Gemini API.
 # Wrapper: calls generate_cover.py via uv.
 # No local files are kept; only online URLs are produced.
 #
 # Required args:
 #   --prompt "full prompt text"
-#   --size   "WxH" (e.g. 900x383, 1080x1440)
+#   --type   cover type (e.g. wechat-header, xiaohongshu)
 #
-# Outputs:
-#   IMAGE_SIZE=<W*H>
+# Outputs (stdout, machine-readable KEY=VALUE):
+#   COVER_TYPE=<type>
+#   COVER_SIZE=<W*H>
 #   STATUS=succeeded
 #   IMAGE_URL=<url>        (publicly accessible)
 #
@@ -32,9 +33,6 @@ for arg in "$@"; do
   fi
 done
 
-if ! output="$(uv run --project "$SKILL_DIR" python "$GEN_SCRIPT" "$@" 2>&1)"; then
-  echo "$output" >&2
+if ! uv run --project "$SKILL_DIR" python "$GEN_SCRIPT" "$@"; then
   exit 1
 fi
-
-echo "$output"

@@ -12,11 +12,13 @@ import json
 import sys
 import threading
 import time
+from typing import Optional
 
 import requests
 import sophnet_tools
 
 API_URL = "https://www.sophnet.com/api/open-apis/v1/chat/completions"
+# Model ID format: "<model_name>:<knowledge_base_id>"
 MODEL = "GLM-5:y2b8n18wa2tK37Ra4syU2"
 DEFAULT_SYSTEM_PROMPT = "你是一个专业的企业知识助手，请根据知识库中的信息准确回答问题。"
 DEFAULT_TIMEOUT = 180
@@ -32,7 +34,7 @@ def _flush_print(msg, **kwargs):
 
 
 def query_rag(query: str, system_prompt: str = DEFAULT_SYSTEM_PROMPT,
-              raw: bool = False, timeout: int = DEFAULT_TIMEOUT) -> str | None:
+              raw: bool = False, timeout: int = DEFAULT_TIMEOUT) -> Optional[str]:
     api_key = sophnet_tools.get_api_key()
     if not api_key:
         print("Error: No API key found. Set SOPH_API_KEY or configure via sophnet-key skill.", file=sys.stderr)

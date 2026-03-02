@@ -15,44 +15,13 @@ import time
 import requests
 import sophnet_tools
 
+from _shared import COVER_TYPES, SAFETY_NEGATIVE_PROMPT, TEXT_NEGATIVE_PROMPT, strip_oss_signature
+
 API_URL = "https://www.sophnet.com/api/open-apis/projects/easyllms/imagegenerator/task"
 VALID_MODELS = ["Z-Image-Turbo", "Qwen-Image", "Qwen-Image-Plus"]
 
-# Always injected into negative_prompt to block text rendering and sensitive content.
-# User-supplied --negative-prompt is appended after this baseline.
-DEFAULT_NEGATIVE_PROMPT = (
-    "text, words, letters, numbers, alphabet, characters, writing, caption, title, "
-    "subtitle, label, logo, watermark, signature, stamp, typographic, font, inscription, "
-    "banner, sign, signage, handwriting, calligraphy, "
-    "nsfw, nudity, nude, naked, sexual, erotic, pornographic, gore, blood, violence, "
-    "bloody, corpse, dead body, weapon, gun, knife, drugs, smoking, alcohol, gambling, "
-    "politically sensitive, national flag, national emblem, political leader, "
-    "religious symbol, hate symbol, discrimination, racist, offensive, disturbing, "
-    "child exploitation, terrorism, self-harm"
-)
-
-COVER_TYPES = {
-    "wechat-header": {
-        "size": "900*383",
-        "label": "WeChat header (900x383)",
-    },
-    "wechat-square": {
-        "size": "200*200",
-        "label": "WeChat square preview (200x200)",
-    },
-    "xiaohongshu": {
-        "size": "1080*1440",
-        "label": "Xiaohongshu cover (1080x1440)",
-    },
-    "guide": {
-        "size": "1080*1440",
-        "label": "Guide / infographic (1080x1440)",
-    },
-    "style": {
-        "size": "1024*1024",
-        "label": "Stylized photo (1024x1024)",
-    },
-}
+# Block text rendering + safety terms for this text-to-image provider
+DEFAULT_NEGATIVE_PROMPT = f"{TEXT_NEGATIVE_PROMPT}, {SAFETY_NEGATIVE_PROMPT}"
 
 
 def parse_bool(value):
@@ -155,21 +124,6 @@ def extract_urls(data):
     return urls
 
 
-def _strip_oss_signature(url):
-    """Remove OSS signature query params to get a publicly accessible bare URL.
-    SophNet's bucket allows public read, but broken signatures cause 403."""
-    if not url or "?" not in url:
-        return url
-    bare = url.split("?")[0]
-    try:
-        r = requests.head(bare, timeout=10, allow_redirects=True)
-        if r.status_code == 200:
-            return bare
-    except requests.RequestException:
-        pass
-    return url
-
-
 def reupload_for_signed_url(api_key, raw_url):
     """Download from raw DashScope URL (using API auth), re-upload to
     SophNet OSS for a public URL, then delete the temp file.
@@ -208,7 +162,7 @@ def reupload_for_signed_url(api_key, raw_url):
         print("Warning: upload_oss returned no signed URL", file=sys.stderr)
         return None
 
-    return _strip_oss_signature(signed_url)
+    return strip_oss_signature(signed_url)
 
 
 def main():

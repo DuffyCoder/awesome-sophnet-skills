@@ -20,45 +20,30 @@ import tempfile
 import requests
 import sophnet_tools
 
+from _shared import COVER_TYPES as _BASE_COVER_TYPES
+from _shared import SAFETY_NEGATIVE_PROMPT, strip_oss_signature
+
 API_URL = (
     "https://www.sophnet.com/api/open-apis/projects/easyllms/imagegenerator/"
     "google/models/gemini-3.1-flash-image-preview:generateContent"
 )
 
-DEFAULT_NEGATIVE_PROMPT = (
-    "nsfw, nudity, nude, naked, sexual, erotic, pornographic, gore, blood, violence, "
-    "bloody, corpse, dead body, weapon, gun, knife, drugs, smoking, alcohol, gambling, "
-    "politically sensitive, national flag, national emblem, political leader, "
-    "religious symbol, hate symbol, discrimination, racist, offensive, disturbing, "
-    "child exploitation, terrorism, self-harm"
-)
+DEFAULT_NEGATIVE_PROMPT = SAFETY_NEGATIVE_PROMPT
+
+# Gemini API needs aspect_ratio per cover type
+_ASPECT_RATIOS = {
+    # Actual ratio is ~2.35:1; 16:9 (1.78:1) is the closest the API supports.
+    # The prompt text requests exact 900x383 to nudge the model.
+    "wechat-header": "16:9",
+    "wechat-square": "1:1",
+    "xiaohongshu": "3:4",
+    "guide": "3:4",
+    "style": "1:1",
+}
 
 COVER_TYPES = {
-    "wechat-header": {
-        "size": "900*383",
-        "aspect_ratio": "16:9",
-        "label": "WeChat header (900x383)",
-    },
-    "wechat-square": {
-        "size": "200*200",
-        "aspect_ratio": "1:1",
-        "label": "WeChat square preview (200x200)",
-    },
-    "xiaohongshu": {
-        "size": "1080*1440",
-        "aspect_ratio": "3:4",
-        "label": "Xiaohongshu cover (1080x1440)",
-    },
-    "guide": {
-        "size": "1080*1440",
-        "aspect_ratio": "3:4",
-        "label": "Guide / infographic (1080x1440)",
-    },
-    "style": {
-        "size": "1024*1024",
-        "aspect_ratio": "1:1",
-        "label": "Stylized photo (1024x1024)",
-    },
+    k: {**v, "aspect_ratio": _ASPECT_RATIOS[k]}
+    for k, v in _BASE_COVER_TYPES.items()
 }
 
 PALETTES = {
@@ -204,19 +189,6 @@ def extract_image_b64(data):
     return None, None
 
 
-def _strip_oss_signature(url):
-    if not url or "?" not in url:
-        return url
-    bare = url.split("?")[0]
-    try:
-        r = requests.head(bare, timeout=10, allow_redirects=True)
-        if r.status_code == 200:
-            return bare
-    except requests.RequestException:
-        pass
-    return url
-
-
 def upload_b64_image(b64_data, ext="png"):
     try:
         raw = base64.b64decode(b64_data)
@@ -233,7 +205,7 @@ def upload_b64_image(b64_data, ext="png"):
         if not signed_url:
             print("Warning: upload_oss returned no signed URL", file=sys.stderr)
             return None
-        return _strip_oss_signature(signed_url)
+        return strip_oss_signature(signed_url)
     finally:
         try:
             os.unlink(tmp_path)
